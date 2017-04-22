@@ -30,8 +30,6 @@ link:
 clean:
 	$(RM) $(S_OBJECTS) $(C_OBJECTS) hx_kernel
 
-
-
 .PHONY : mount_image	
 mount_image:
 	sudo mount floppy.img /mnt/kos/
@@ -71,3 +69,7 @@ update_loader:
 	sudo cp boot/loader.bin /mnt/kos/
 	sleep 1
 	sudo umount /mnt/kos/
+
+.PHONY : show_mm
+show_mm:
+	objdump -h kernel

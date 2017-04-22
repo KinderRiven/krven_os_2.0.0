@@ -4,8 +4,30 @@ jmp		START
 BaseOfStack			equ		0100h
 BaseOfKernelFile	equ		08000h
 OffsetOfKernelFile	equ		0h
+BaseOfLoader		equ		09000h
+OffsetOfLoader		equ		0100h
+BaseOfLoaderPhyAddr equ		BaseOfLoader * 10h
 
 %include "fat12.inc"
+%include "pm.inc"
+
+;---------------------------------------------------------------------------
+;									GDT									   ;
+;---------------------------------------------------------------------------
+HEAD_GDT:		Descriptor 		  0,		  0,						  0
+DESC_FLAT_C:	Descriptor		  0,	0fffffh,	DA_CR|DA_32|DA_LIMIT_4K
+DESC_FLAT_RW:	Descriptor		  0,	0fffffh,   DA_DRW|DA_32|DA_LIMIT_4K
+DESC_VIDEO: 	Descriptor	0B8000h,     0ffffh,   			 DA_DRW|DA_DPL3
+;---------------------------------------------------------------------------
+GdtLen			equ		$ - HEAD_GDT						;GDT表长度
+GdtPtr			dw		GdtLen - 1							;
+				dd		BaseOfLoaderPhyAddr + HEAD_GDT		;物理地址
+;--------------------------------------------------------------------------
+;GDT选择子
+SelectorFlatC	equ		DESC_FLAT_C  - HEAD_GDT
+SelectorFlatRW	equ		DESC_FLAT_RW - HEAD_GDT
+SelectorVideo	equ		DESC_VIDEO   - HEAD_GDT + SA_RPL3	;请求者特权级
+;--------------------------------------------------------------------------
 
 wRootDirSizeForLoop dw		RootDirSectors
 
@@ -17,7 +39,8 @@ KernelFileName		db		"KERNEL     ", 0
 MESSAGE_LENGTH		equ		9
 LOADER_MESSAGE:		db		"[Running]"
 SUCCESS_MESSAGE		db		"[SUCCESS]"
-ERROR_MESSAGE		db		"[ ERROR ]"
+ERROR_MESSAGE		db		"[ERROR]  "
+PM_MESSAGE			db		"[PM]     "
 
 START:									;开始
 SEGMENT_INIT:							;段初始化
@@ -115,15 +138,6 @@ FILENAME_FOUND:
 	mov		ax,	cx
 
 GOON_LOADING_FILE:
-	push	ax
-	push	bx
-	mov		ah,	0Eh
-	mov		al, '.'
-	mov		bl,	0Fh
-	int		10h
-	pop		bx
-	pop		ax
-
 	mov		cl, 1	
 	call	ReadSector
 	pop		ax
@@ -142,7 +156,25 @@ FILE_LOADED:
 	mov		dl, 1
 	mov		dh,	3
 	call	PRINT_MESSAGE
-	jmp		BaseOfKernelFile:OffsetOfKernelFile
+
+;---------------------------------------------------------;
+;				从这里跳入保护模式						  ;
+;---------------------------------------------------------;
+
+PREPARE_PM:
+	
+	lgdt	[GdtPtr]							;gdt指针
+	cli
+	
+	in		al,  92h
+	or		al,	 00000010b	
+	out		92h, al
+	
+	mov		eax, cr0
+	or		eax, 1
+	mov		cr0, eax
+
+	jmp		dword SelectorFlatC:(BaseOfLoaderPhyAddr+PM_START)
 
 KillMotor:
 	push	dx
@@ -266,4 +298,23 @@ PRINT_MESSAGE:
 	ret
 	
 [SECTION .s32]
-[BITS 32]	
+[BITS 32]
+PM_START:							;如果进入了保护模式打印一个P
+	mov		ax,	SelectorVideo
+	mov		gs,	ax
+	mov		ah, 0Fh
+	mov		al, 'P'
+	mov		[gs:((80 * 24 + 79) * 2)], ax
+PM_INIT:							;对寄存器进行初始化
+	mov		 ax, SelectorFlatRW
+	mov		 ds, ax
+	mov		 es, ax
+	mov		 fs, ax
+	mov		 ss, ax
+	mov		esp, TopOfStack
+	jmp		$
+
+;栈
+StackSpace:
+	times	1024 	db		0
+TopOfStack	equ		BaseOfLoaderPhyAddr + $
