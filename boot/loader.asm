@@ -20,8 +20,11 @@ KernelEntryPointPhyAddr equ		30400h
 ;									GDT									   ;
 ;---------------------------------------------------------------------------
 HEAD_GDT:		Descriptor 		  	  0, 	    0,		   				   0
+;可执行可读写
 DESC_FLAT_C:	Descriptor		  	  0,  0fffffh,	DA_CR |DA_32|DA_LIMIT_4K
+;读写
 DESC_FLAT_RW:	Descriptor		  	  0,  0fffffh,  DA_DRW|DA_32|DA_LIMIT_4K
+;可读写
 DESC_VIDEO: 	Descriptor		0B8000h,   0ffffh,   		  DA_DRW|DA_DPL3
 ;--------------------------------------------------------------------------;
 GdtLen			equ		$ - HEAD_GDT						;GDT表长度

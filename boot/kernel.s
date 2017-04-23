@@ -3,7 +3,9 @@
 [section .text]
 [GLOBAL	_start]				;连接器识别
 [EXTERN kernel_entry]
+
 _start:		
+	mov		esp, STACK_TOP
 	call	kernel_entry
 	jmp	$
 	
