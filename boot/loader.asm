@@ -1,15 +1,17 @@
 org		0100h
 jmp		START
 
-BaseOfStack			equ		0100h
-BaseOfKernelFile	equ		08000h
-OffsetOfKernelFile	equ		0h
-BaseOfLoader		equ		09000h
-OffsetOfLoader		equ		0100h
-BaseOfLoaderPhyAddr equ		BaseOfLoader * 10h
-PageDirBase			equ		100000h				;页目录开始地址
-PageTblBase			equ		101000h				;页表开始地址
+BaseOfStack				equ		0100h
+BaseOfKernelFile		equ		08000h
+OffsetOfKernelFile		equ		0h
+BaseOfKernelFilePhyAddr	equ		BaseOfKernelFile * 10h
 
+BaseOfLoader			equ		09000h
+OffsetOfLoader			equ		0100h
+BaseOfLoaderPhyAddr 	equ		BaseOfLoader * 10h
+PageDirBase				equ		100000h				;页目录开始地址
+PageTblBase				equ		101000h				;页表开始地址
+KernelEntryPointPhyAddr equ		30400h
 
 %include "fat12.inc"
 %include "pm.inc"
@@ -17,12 +19,10 @@ PageTblBase			equ		101000h				;页表开始地址
 ;---------------------------------------------------------------------------
 ;									GDT									   ;
 ;---------------------------------------------------------------------------
-HEAD_GDT:		Descriptor 		  0,		  0,						  0
-DESC_FLAT_C:	Descriptor		  0,	0fffffh,	DA_CR|DA_32|DA_LIMIT_4K
-DESC_FLAT_RW:	Descriptor		  0,	0fffffh,   DA_DRW|DA_32|DA_LIMIT_4K
-DESC_VIDEO: 	Descriptor	0B8000h,     0ffffh,   			 DA_DRW|DA_DPL3
-DESC_PAGE_DIR:	Descriptor	PageDirBase,	4095,	DA_DRW
-DESC_PAGE_TBL:	Descriptor	PageTblBase,	1023,	DA_DRW|DA_LIMIT_4K
+HEAD_GDT:		Descriptor 		  	  0, 	    0,		   				   0
+DESC_FLAT_C:	Descriptor		  	  0,  0fffffh,	DA_CR |DA_32|DA_LIMIT_4K
+DESC_FLAT_RW:	Descriptor		  	  0,  0fffffh,  DA_DRW|DA_32|DA_LIMIT_4K
+DESC_VIDEO: 	Descriptor		0B8000h,   0ffffh,   		  DA_DRW|DA_DPL3
 ;--------------------------------------------------------------------------;
 GdtLen			equ		$ - HEAD_GDT						;GDT表长度
 GdtPtr			dw		GdtLen - 1							;
@@ -32,8 +32,6 @@ GdtPtr			dw		GdtLen - 1							;
 SelectorFlatC	equ		DESC_FLAT_C  - HEAD_GDT
 SelectorFlatRW	equ		DESC_FLAT_RW - HEAD_GDT
 SelectorVideo	equ		DESC_VIDEO   - HEAD_GDT + SA_RPL3	;请求者特权级
-SelectorPageDir	equ		DESC_PAGE_DIR
-SelectorPageTbl	equ		DESC_PAGE_TBL
 
 ;---------------------------------------------------------------------------;
 
@@ -320,15 +318,17 @@ PM_INIT:												;对寄存器进行初始化
 	mov		 fs, ax
 	mov		 ss, ax
 	mov		esp, TopOfStack
+	call	SetupPaging
+	call	InitKernel
+	jmp		PM_JMP
 ;---------------------------------------------------------;
 ;				开启分页内存管理从这里开始				  ;
 ;---------------------------------------------------------;
 
-SetupPaging:	
-	mov		 ax, SelectorPageDir						;初始化页表目录
+SetupPaging:
+	mov		 ax, SelectorFlatRW							;初始化页表目录
 	mov		 es, ax
-	mov		ecx, 1024
-	xor		edi, edi
+	mov		edi, PageDirBase
 	xor		eax, eax								
 	mov		eax, PageTblBase|PG_P|PG_USU|PG_RWW			;第一个页表地址
 .1:
@@ -336,11 +336,8 @@ SetupPaging:
 	add		eax, 4096									;每次加4096	
 	loop	.1
 
-	mov		 ax, SelectorPageTbl						;初始化页表
-	mov		 es, ax
-	mov		ecx, 1024 * 1024							;1024个页表
-														;一个页面1024个页表项
-	xor		edi, edi
+	mov		ecx, 1024 * 1024							;1024 * 1024个页表
+	mov		edi, PageTblBase
 	xor		eax, eax
 	mov		eax, PG_P | PG_USU | PG_RWW
 .2:
@@ -361,40 +358,10 @@ SetupPaging:
 ;---------------------------------------------------------;
 ;				从这里开始装入内核代码					  ;
 ;---------------------------------------------------------;
-
-MemCpy:
-	push	ebp
-	mov	ebp, esp
-	push	esi
-	push	edi
-	push	ecx
-	mov	edi, [ebp + 8]	; Destination
-	mov	esi, [ebp + 12]	; Source
-	mov	ecx, [ebp + 16]	; Counter
-.1:
-	cmp	ecx, 0		; 判断计数器
-	jz	.2		; 计数器为零时跳出
-
-	mov	al, [ds:esi]	
-	inc	esi			
-	mov	byte [es:edi], al	
-	inc	edi
-
-	dec	ecx		
-	jmp	.1
-.2:
-	mov	eax, [ebp + 8]
-	pop	ecx
-	pop	edi
-	pop	esi
-	mov	esp, ebp
-	pop	ebp
-	ret			; 函数结束，返回
-
 InitKernel:
 	xor		esi, esi
-	mov		 cs, word [BaseOfKernelFilePhyAddr + 2Ch]
-	movzx	ecx, cs
+	mov		 cx, word [BaseOfKernelFilePhyAddr + 2Ch]
+	movzx	ecx, cx
 	mov		esi, [BaseOfKernelFilePhyAddr + 1Ch]
 	add		esi, BaseOfKernelFilePhyAddr
 
@@ -418,8 +385,39 @@ InitKernel:
 ;---------------------------------------------------------;
 ;														  ;
 ;---------------------------------------------------------;
+MemCpy:
+	push	ebp
+	mov		ebp, esp
+	push	esi
+	push	edi
+	push	ecx
+	mov		edi, [ebp + 8]	; Destination
+	mov		esi, [ebp + 12]	; Source
+	mov		ecx, [ebp + 16]	; Counter
+.1:
+	cmp		ecx, 0		; 判断计数器
+	jz	.2		; 计数器为零时跳出
+
+	mov		al, [ds:esi]	
+	inc		esi			
+	mov		byte [es:edi], al	
+	inc		edi
+
+	dec		ecx		
+	jmp	.1
+.2:
+	mov		eax, [ebp + 8]
+	pop		ecx
+	pop		edi
+	pop		esi
+	mov		esp, ebp
+	pop		ebp
+	ret			; 函数结束，返回
+;---------------------------------------------------------;
+;				把管理权限交给内核						  ;
+;---------------------------------------------------------;
 PM_JMP:
-	jmp		$
+	jmp		SelectorFlatC:KernelEntryPointPhyAddr
 ;栈
 StackSpace:
 	times	1024 	db		0

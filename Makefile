@@ -13,6 +13,8 @@ ASM_FLAGS = -f elf -g -F stabs
 
 all: $(S_OBJECTS) $(C_OBJECTS) link update_kernel
 
+
+test:
 # The automatic variable `$<' is just the first prerequisite
 .c.o:
 	@echo 编译代码文件 $< ...

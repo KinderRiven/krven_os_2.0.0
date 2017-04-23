@@ -2,10 +2,13 @@
 
 [section .text]
 [GLOBAL	_start]				;连接器识别
-
-_start:	
+[EXTERN kernel_entry]
+_start:		
+	call	kernel_entry
 	jmp	$
+	
+
 [section .bss]
 stack:
-	resb	1024
-STACK_TOP equ $-stack-1
+	resb	1024 * 2
+STACK_TOP 	equ	 $ - stack - 1
