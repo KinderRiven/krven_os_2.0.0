@@ -7,6 +7,9 @@ OffsetOfKernelFile	equ		0h
 BaseOfLoader		equ		09000h
 OffsetOfLoader		equ		0100h
 BaseOfLoaderPhyAddr equ		BaseOfLoader * 10h
+PageDirBase			equ		100000h				;页目录开始地址
+PageTblBase			equ		101000h				;页表开始地址
+
 
 %include "fat12.inc"
 %include "pm.inc"
@@ -18,16 +21,21 @@ HEAD_GDT:		Descriptor 		  0,		  0,						  0
 DESC_FLAT_C:	Descriptor		  0,	0fffffh,	DA_CR|DA_32|DA_LIMIT_4K
 DESC_FLAT_RW:	Descriptor		  0,	0fffffh,   DA_DRW|DA_32|DA_LIMIT_4K
 DESC_VIDEO: 	Descriptor	0B8000h,     0ffffh,   			 DA_DRW|DA_DPL3
-;---------------------------------------------------------------------------
+DESC_PAGE_DIR:	Descriptor	PageDirBase,	4095,	DA_DRW
+DESC_PAGE_TBL:	Descriptor	PageTblBase,	1023,	DA_DRW|DA_LIMIT_4K
+;--------------------------------------------------------------------------;
 GdtLen			equ		$ - HEAD_GDT						;GDT表长度
 GdtPtr			dw		GdtLen - 1							;
 				dd		BaseOfLoaderPhyAddr + HEAD_GDT		;物理地址
-;--------------------------------------------------------------------------
+;--------------------------------------------------------------------------;
 ;GDT选择子
 SelectorFlatC	equ		DESC_FLAT_C  - HEAD_GDT
 SelectorFlatRW	equ		DESC_FLAT_RW - HEAD_GDT
 SelectorVideo	equ		DESC_VIDEO   - HEAD_GDT + SA_RPL3	;请求者特权级
-;--------------------------------------------------------------------------
+SelectorPageDir	equ		DESC_PAGE_DIR
+SelectorPageTbl	equ		DESC_PAGE_TBL
+
+;---------------------------------------------------------------------------;
 
 wRootDirSizeForLoop dw		RootDirSectors
 
@@ -299,21 +307,119 @@ PRINT_MESSAGE:
 	
 [SECTION .s32]
 [BITS 32]
-PM_START:							;如果进入了保护模式打印一个P
+PM_START:												;如果进入了保护模式打印一个P
 	mov		ax,	SelectorVideo
 	mov		gs,	ax
 	mov		ah, 0Fh
 	mov		al, 'P'
 	mov		[gs:((80 * 24 + 79) * 2)], ax
-PM_INIT:							;对寄存器进行初始化
+PM_INIT:												;对寄存器进行初始化
 	mov		 ax, SelectorFlatRW
 	mov		 ds, ax
 	mov		 es, ax
 	mov		 fs, ax
 	mov		 ss, ax
 	mov		esp, TopOfStack
-	jmp		$
+;---------------------------------------------------------;
+;				开启分页内存管理从这里开始				  ;
+;---------------------------------------------------------;
 
+SetupPaging:	
+	mov		 ax, SelectorPageDir						;初始化页表目录
+	mov		 es, ax
+	mov		ecx, 1024
+	xor		edi, edi
+	xor		eax, eax								
+	mov		eax, PageTblBase|PG_P|PG_USU|PG_RWW			;第一个页表地址
+.1:
+	stosd
+	add		eax, 4096									;每次加4096	
+	loop	.1
+
+	mov		 ax, SelectorPageTbl						;初始化页表
+	mov		 es, ax
+	mov		ecx, 1024 * 1024							;1024个页表
+														;一个页面1024个页表项
+	xor		edi, edi
+	xor		eax, eax
+	mov		eax, PG_P | PG_USU | PG_RWW
+.2:
+	stosd
+	add		eax, 4096
+	loop	.2
+
+	mov		eax, PageDirBase
+	mov		cr3, eax
+	mov		eax, cr0
+	or		eax, 80000000h
+	mov		cr0, eax
+	jmp		short .3
+.3:
+	nop
+	ret
+
+;---------------------------------------------------------;
+;				从这里开始装入内核代码					  ;
+;---------------------------------------------------------;
+
+MemCpy:
+	push	ebp
+	mov	ebp, esp
+	push	esi
+	push	edi
+	push	ecx
+	mov	edi, [ebp + 8]	; Destination
+	mov	esi, [ebp + 12]	; Source
+	mov	ecx, [ebp + 16]	; Counter
+.1:
+	cmp	ecx, 0		; 判断计数器
+	jz	.2		; 计数器为零时跳出
+
+	mov	al, [ds:esi]	
+	inc	esi			
+	mov	byte [es:edi], al	
+	inc	edi
+
+	dec	ecx		
+	jmp	.1
+.2:
+	mov	eax, [ebp + 8]
+	pop	ecx
+	pop	edi
+	pop	esi
+	mov	esp, ebp
+	pop	ebp
+	ret			; 函数结束，返回
+
+InitKernel:
+	xor		esi, esi
+	mov		 cs, word [BaseOfKernelFilePhyAddr + 2Ch]
+	movzx	ecx, cs
+	mov		esi, [BaseOfKernelFilePhyAddr + 1Ch]
+	add		esi, BaseOfKernelFilePhyAddr
+
+.Begin:
+	mov		eax, [esi + 0]
+	cmp		eax, 0
+	jz		.NoAction
+	push	dword[esi + 010h]
+	mov		eax, [esi + 04h]
+	add		eax, BaseOfKernelFilePhyAddr
+	push	eax
+	push	dword[esi + 08h]
+	call	MemCpy
+	add		esp, 12
+
+.NoAction:
+	add		esi, 020h
+	dec		ecx
+	jnz		.Begin
+	ret
+;---------------------------------------------------------;
+;														  ;
+;---------------------------------------------------------;
+PM_JMP:
+	jmp		$
 ;栈
 StackSpace:
 	times	1024 	db		0

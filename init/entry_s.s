@@ -1,12 +1,10 @@
 [BITS 32]
 
 [section .text]
-[GLOBAL	start]				;连接器识别
-[EXTERN kernel_entry]		;导入入口函数
+[GLOBAL	_start]				;连接器识别
 
-start:	
-	jmp 	$
-
+_start:	
+	jmp	$
 [section .bss]
 stack:
 	resb	1024
