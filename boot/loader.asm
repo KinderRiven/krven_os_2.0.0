@@ -2,6 +2,7 @@ org		0100h
 jmp		START
 
 BaseOfStack				equ		0100h
+
 BaseOfKernelFile		equ		08000h
 OffsetOfKernelFile		equ		0h
 BaseOfKernelFilePhyAddr	equ		BaseOfKernelFile * 10h
@@ -9,9 +10,9 @@ BaseOfKernelFilePhyAddr	equ		BaseOfKernelFile * 10h
 BaseOfLoader			equ		09000h
 OffsetOfLoader			equ		0100h
 BaseOfLoaderPhyAddr 	equ		BaseOfLoader * 10h
-PageDirBase				equ		100000h				;页目录开始地址
-PageTblBase				equ		101000h				;页表开始地址
-KernelEntryPointPhyAddr equ		30400h
+PageDirBase				equ		200000h				;页目录开始地址
+PageTblBase				equ		201000h				;页表开始地址
+KernelEntryPointPhyAddr equ		100000h			;内核转入地址
 
 %include "fat12.inc"
 %include "pm.inc"
@@ -43,7 +44,7 @@ wRootDirSizeForLoop dw		RootDirSectors
 wSectorNo			dw		0
 bOdd				db		0
 dwKernelSize		dd		0
-KernelFileName		db		"KERNEL     ", 0
+KernelFileName		db		"KOS        ", 0
 
 MESSAGE_LENGTH		equ		9
 LOADER_MESSAGE:		db		"[Running]"

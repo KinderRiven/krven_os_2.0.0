@@ -22,7 +22,7 @@ struct gdt_ptr_t
 }__attribute__((packed)) gdt_ptr_t;
 
 
-void gdt_init();
+void init_gdt();
 extern void gdt_flush(uint32_t);
 
 #endif

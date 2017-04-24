@@ -2,6 +2,7 @@ C_SOURCES = $(shell find . -name "*.c")
 C_OBJECTS = $(patsubst %.c, %.o, $(C_SOURCES))
 S_SOURCES = $(shell find . -name "*.s")
 S_OBJECTS = $(patsubst %.s, %.o, $(S_SOURCES))
+B_OBJECTS = $(shell find . -name "*.bin")
 
 CC = gcc
 LD = ld
@@ -10,6 +11,8 @@ ASM = nasm
 C_FLAGS = -c -Wall -m32 -ggdb -gstabs+ -nostdinc -fno-builtin -fno-stack-protector -I include
 LD_FLAGS = -T scripts/kernel.ld -m elf_i386 -nostdlib
 ASM_FLAGS = -f elf -g -F stabs
+
+Kernel_Name = kos
 
 all: $(S_OBJECTS) $(C_OBJECTS) link update_kernel
 
@@ -26,11 +29,11 @@ test:
 
 link:
 	@echo 链接内核文件...
-	$(LD) $(LD_FLAGS) $(S_OBJECTS) $(C_OBJECTS) -o kernel
+	$(LD) $(LD_FLAGS) $(S_OBJECTS) $(C_OBJECTS) -o $(Kernel_Name)
 
 .PHONY:clean
 clean:
-	$(RM) $(S_OBJECTS) $(C_OBJECTS) hx_kernel
+	$(RM) $(S_OBJECTS) $(C_OBJECTS) $(Kernel_Name) $(B_OBJECTS)
 
 .PHONY : mount_image	
 mount_image:
@@ -54,7 +57,7 @@ show_dir:
 .PHONY : update_kernel
 update_kernel:
 	sudo mount floppy.img /mnt/kos/
-	sudo cp kernel /mnt/kos/
+	sudo cp $(Kernel_Name) /mnt/kos/
 	sleep 1
 	sudo umount /mnt/kos/
 
@@ -74,4 +77,4 @@ update_loader:
 
 .PHONY : show_mm
 show_mm:
-	objdump -h kernel
+	objdump -h $(Kernel_Name)
