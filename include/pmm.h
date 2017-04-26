@@ -8,6 +8,8 @@ extern uint8_t kern_end[];
 
 extern uint32_t phy_page_count;
 
+extern uint32_t kern_stack_top;
+
 //最多管理512MBN内存
 #define PMM_MAX_SIZE 0x20000000
 
@@ -31,5 +33,6 @@ void init_pmm();
 uint32_t pmm_alloc_page();
 
 void pmm_free_page(uint32_t p);
+
 
 #endif

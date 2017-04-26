@@ -4,6 +4,7 @@
 #include "types.h"
 
 void init_idt();
+void enable_intr();
 
 typedef
 struct idt_entry_t{
@@ -43,6 +44,7 @@ struct pt_regs_t{
 	uint32_t eflags;
 	uint32_t useresp;
 	uint32_t ss;
+
 } pt_regs;
 
 typedef void (*interrupt_handler_t)(pt_regs *);
@@ -95,10 +97,9 @@ void isr31();
 void isr255();
 
 // IRQ 处理函数
-//void irq_handler(pt_regs *regs);
+void irq_handler(pt_regs *regs);
 
 // 定义IRQ
-/*
 #define  IRQ0     32 	// 电脑系统计时器
 #define  IRQ1     33 	// 键盘
 #define  IRQ2     34 	// 与 IRQ9 相接，MPU-401 MD 使用
@@ -134,5 +135,4 @@ void irq12(); 		// 接 PS/2 鼠标，也可设定给其他硬件
 void irq13(); 		// 协处理器使用
 void irq14(); 		// IDE0 传输控制使用
 void irq15(); 		// IDE1 传输控制使用
-*/
 #endif

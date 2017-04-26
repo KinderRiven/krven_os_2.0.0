@@ -71,6 +71,8 @@ void init_pmm(){
 				phy_addr_end = page_addr;
 			}
 	}
+
+	
 }
 
 uint32_t pmm_alloc_page(){

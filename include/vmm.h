@@ -38,8 +38,16 @@ typedef uint32_t pte_t;
 
 #define PTE_COUNT 128
 
+extern uint32_t pgd_kern[PGD_SIZE];
+
 void init_vmm();
 
 void switch_pgd();
+
+void map(pgd_t *pgd_now, uint32_t va, uint32_t pa, uint32_t flags);
+
+void unmap(pgd_t *pgd_now, uint32_t va);
+
+uint32_t get_mapping(pgd_t *pgd_now, uint32_t va, uint32_t *pa);
 
 #endif

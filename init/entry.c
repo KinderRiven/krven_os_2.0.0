@@ -1,11 +1,16 @@
 #include "types.h"
 #include "gdt.h"
+#include "heap.h"
+#include "timer.h"
 #include "console.h"
 #include "stdio.h"
 #include "pmm.h"
 #include "vmm.h"
 #include "multiboot.h"
 #include "idt.h"
+#include "sched.h"
+#include "task.h"
+#include "keyboard.h"
 
 void kern_init();
 
@@ -13,6 +18,8 @@ multiboot_t *glb_mboot_ptr;
 
 //内核栈
 char kern_stack[STACK_SIZE];
+
+uint32_t kern_stack_top;
 
 //临时页目录和页表
 __attribute__((section(".init.data"))) pgd_t *pgd_tmp  = (pgd_t *) 0x1000;
@@ -44,13 +51,28 @@ void kern_entry(){
 	asm volatile("mov %0, %%cr0" : : "r" (cr0));
 
 	//切换到内核栈
-	uint32_t kern_stack_top = ((uint32_t)kern_stack + STACK_SIZE) & 0xFFFFFFF0;
+	kern_stack_top = ((uint32_t)kern_stack + STACK_SIZE) & 0xFFFFFFF0;
 	asm volatile("mov %0, %%esp\n\t"
 					"xor %%ebp, %%ebp" : : "r"(kern_stack_top));
 	
 	glb_mboot_ptr = mboot_ptr_tmp + PAGE_OFFSET;
 	kern_init();
 }
+
+int thread_proc_b(void *arg){
+	
+	while(1){
+		printc(c_black, c_red, "B");
+	}
+}
+
+int thread_proc_a(void *arg){
+	
+	while(1){
+		printc(c_black, c_blue, "A");
+	}
+
+}	
 
 void kern_init()
 {
@@ -68,21 +90,27 @@ void kern_init()
 	init_vmm();
 	printc(c_black, c_light_brown, "Init vmm finished!\n");	
 
-	uint32_t page1 = pmm_alloc_page();
-	uint32_t page2 = pmm_alloc_page();
-	uint32_t page3 = pmm_alloc_page();
-	printf("Page1 : 0x%08X\n", page1);
-	printf("Page2 : 0x%08X\n", page2);
-	printf("Page3 : 0x%08X\n", page3);
-
 	init_idt();
 	printc(c_black, c_light_brown, "Init idt finished!\n");
 	
-	asm volatile("int $0x3");
-	asm volatile("int $0x4");	
+	init_heap();
+	test_heap();
+
+	init_sched();	
+	//
+	init_keyboard();	
+
+	//打开中断	
+	enable_intr();
+	printc(c_black, c_red, "Interrupt is enable!\n");	
+
+	kernel_thread(thread_proc_b, NULL);	
+	kernel_thread(thread_proc_a, NULL);
+	
+	init_timer(200);
 
 	while(1){
-		
+		asm volatile("hlt");
 	}
 }
 
