@@ -27,7 +27,6 @@ void init_sched(){
 
 //调度下一个
 void schedule(){
-
 	if(current) {
 		change_task_to(current->next);
 	}	

@@ -97,16 +97,18 @@ void kern_init()
 	test_heap();
 
 	init_sched();	
-	//
+	//键盘进程打开
 	init_keyboard();	
 
 	//打开中断	
 	enable_intr();
 	printc(c_black, c_red, "Interrupt is enable!\n");	
 
-	kernel_thread(thread_proc_b, NULL);	
-	kernel_thread(thread_proc_a, NULL);
-	
+	kernel_thread(keyboard_buffer_handler, NULL);
+	//kernel_thread(thread_proc_b, NULL);	
+	//kernel_thread(thread_proc_a, NULL);
+	//kernel_thread(thread_proc_c, NULL);	
+
 	init_timer(200);
 
 	while(1){

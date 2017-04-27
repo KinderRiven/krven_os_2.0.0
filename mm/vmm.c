@@ -4,8 +4,8 @@
 
 //4096字节对齐
 pgd_t pgd_kern[PGD_SIZE] __attribute__ ((aligned(PAGE_SIZE)));
-//4096字节对齐
 
+//4096字节对齐
 static pte_t pte_kern[PTE_COUNT][PTE_SIZE] __attribute__ ((aligned(PAGE_SIZE)));
 
 

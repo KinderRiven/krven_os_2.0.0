@@ -17,7 +17,7 @@ void isr_handler(pt_regs *regs){
 	if(interrupt_handlers[regs -> int_no]){
 		interrupt_handlers[regs -> int_no](regs);
 	} else {
-		printc(c_black, c_red, "Unhandler isr: %d\n", regs -> int_no);	
+		printc(c_black, c_red, "Unhandler isr: %d\n", regs -> int_no);
 	}
 }
 

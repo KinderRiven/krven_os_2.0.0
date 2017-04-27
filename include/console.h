@@ -38,4 +38,6 @@ void console_write(char *cstr);
 //打印一个有颜色的字符串
 void console_write_color(char *cstr, c_color_t bg, c_color_t font);
 
+void console_putc(char c);
+
 #endif

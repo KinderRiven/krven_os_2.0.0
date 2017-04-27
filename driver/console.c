@@ -50,6 +50,10 @@ static void scroll(){
 	}
 }
 
+void console_putc(char c){
+	console_putc_color(c, c_black, c_white);
+}
+
 void console_putc_color(char c, c_color_t bg, c_color_t font)
 {
 	uint8_t bg_color = (uint8_t)bg;

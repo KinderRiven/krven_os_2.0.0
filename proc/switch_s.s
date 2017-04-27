@@ -3,7 +3,7 @@
 ; switch_to(prev -> context, current->context)
 switch_to:
 	
-	mov	eax, [esp + 4]		;context -> prev
+	mov	eax, [esp + 4]		; context -> prev
 							; 保存当前的寄存器内容到
 							; context -> pre指向的PCB块
 	mov [eax + 0],  esp		; esp

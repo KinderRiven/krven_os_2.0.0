@@ -38,7 +38,6 @@ int32_t kernel_thread(int (*fn)(void *), void *arg){
 	//内核栈
 	new_task -> context.esp = (uint32_t)new_task + STACK_SIZE - sizeof(uint32_t) * 3;
 		
-	//
 	new_task -> context.eflags = 0x200;
 	new_task -> next = running_proc_head;
 	
@@ -49,7 +48,6 @@ int32_t kernel_thread(int (*fn)(void *), void *arg){
 	}
 
 	tail -> next = new_task;
-	
 	return new_task -> pid;
 }
 
