@@ -11,7 +11,7 @@ int keyboard_buffer_handler(void *arg);
 typedef
 struct keymap_t{
 	
-	uint8_t ascii;
+	int8_t 	ascii;
 	uint8_t make_1;
 	uint8_t make_2;
 	uint8_t break_1;
@@ -27,10 +27,11 @@ struct keymap_t{
 typedef
 struct keyboard_buffer_t{
 
-	uint8_t buf[BUFFER_SIZE];
-	uint8_t count;
-	uint8_t *head;
-	uint8_t *tail;	
+	uint8_t	buf[BUFFER_SIZE];			
+	uint8_t count;	
+	uint8_t	*head;						
+	uint8_t *tail;		
+	uint8_t tty_id;						//对应的tty终端ID
 
 } keyboard_buffer_t;
 

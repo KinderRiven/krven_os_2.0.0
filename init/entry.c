@@ -11,6 +11,7 @@
 #include "sched.h"
 #include "task.h"
 #include "keyboard.h"
+#include "tty.h"
 
 void kern_init();
 
@@ -110,6 +111,11 @@ void kern_init()
 	//kernel_thread(thread_proc_c, NULL);	
 
 	init_timer(200);
+
+	console_clear();
+
+	init_tty();
+	kernel_thread(tty_thread, NULL);
 
 	while(1){
 		asm volatile("hlt");

@@ -3,15 +3,28 @@
 #include "stdio.h"
 #include "common.h"
 #include "console.h"
+#include "tty.h"
 
 #define KEY_MAP_SIZE 256
 
+char tab_blank[] = "    ";
+
+//键盘的扫描码映射
 static keymap_t keymap[KEY_MAP_SIZE];
+
+//键盘的扫描码映射数量
 static uint8_t keymap_size = 0;
+
+//键盘输入缓冲
 static keyboard_buffer_t keyboard_buffer;
+
+//建立键盘的扫描码映射数量
 static void set_keyboard_map(uint8_t ascii, uint8_t make_1, uint8_t make_2, uint8_t break_1, uint8_t break_2);
 
+//是否打开大小写锁定
 uint8_t caps_lock = 0;
+
+//是否按住了shift
 uint8_t shift = 0;
 
 void keyboard_handler(pt_regs *regs){
@@ -54,10 +67,12 @@ void keyboard_buffer_read(){
 
 		//功能键
 		switch(byte1){
-					
+			
+			//大小写锁定		
 			case 0x3A :
 				caps_lock = (caps_lock == 0) ? 1 : 0;
 				return;
+			//shift
 			case 0x2A :
 				case 0x36 :
 				shift = 1;
@@ -66,11 +81,15 @@ void keyboard_buffer_read(){
 			case 0xB6:
 				shift = 0;
 				return;
+			//退格
 			case 0x0E:
-				console_write("\b \b");
+				//console_write("\b \b");
+				tty_putc(keyboard_buffer.tty_id, '\b');
 				return;
+			//Tab
 			case 0x0F:
-				console_write("    ");
+				//console_write(tab_blank);
+				tty_write(keyboard_buffer.tty_id, tab_blank);	
 				return;
 			default:
 				break;
@@ -156,13 +175,15 @@ void keyboard_buffer_read(){
 							break;	
 					}
 				}
-				console_putc(ascii);
+				//console_putc(ascii);
+				tty_putc(keyboard_buffer.tty_id, ascii);
 			}	
 		}
 	}
 	
 	return;
 }
+
 
 int keyboard_buffer_handler(void *arg){
 
@@ -181,6 +202,9 @@ void init_keyboard(){
 	keyboard_buffer.count = 0;
 	keyboard_buffer.head = keyboard_buffer.buf;
 	keyboard_buffer.tail = keyboard_buffer.buf;	
+	
+	//初始化tty
+	keyboard_buffer.tty_id = current_tty;
 
 	//扫描表初始化
 	//字母
@@ -248,6 +272,8 @@ void init_keyboard(){
 	set_keyboard_map(' ', 0x2A, 0, 0xAA, 0);
 	//R-shift
 	set_keyboard_map(' ', 0x36, 0, 0xB6, 0);
+	//回车
+	set_keyboard_map('\n', 0x1C, 0, 0x9C, 0);
 }
 
 static void set_keyboard_map(uint8_t ascii, uint8_t make_1, uint8_t make_2, uint8_t break_1, uint8_t break_2){

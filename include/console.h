@@ -40,4 +40,7 @@ void console_write_color(char *cstr, c_color_t bg, c_color_t font);
 
 void console_putc(char c);
 
+extern uint8_t console_cursor_x;
+extern uint8_t console_cursor_y;
+
 #endif

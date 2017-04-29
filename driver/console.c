@@ -6,6 +6,9 @@ static uint16_t *video_memory = (uint16_t *)(0xB8000 + PAGE_OFFSET);
 static uint8_t cursor_x = 0;
 static uint8_t cursor_y = 0;
 
+uint8_t console_cursor_x = 0;
+uint8_t console_cursor_y = 0;
+
 static void move_cursor(){
 
 	uint16_t cursorLocation = cursor_y * 80 + cursor_x;
@@ -14,7 +17,9 @@ static void move_cursor(){
 	outb(0x3D5,	cursorLocation >> 8);
 	outb(0x3D4,	15);
 	outb(0x3D5, cursorLocation);
-		
+	
+	console_cursor_x = cursor_x;
+	console_cursor_y = cursor_y;	
 }
 
 void console_clear(){

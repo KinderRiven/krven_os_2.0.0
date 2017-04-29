@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  vargs.h
- *
- *    Description:  可变形参表相关的宏定义
- *
- *        Version:  1.0
- *        Created:  2013年11月06日 12时12分19秒
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Hurley (LiuHuan), liuhuan1992@gmail.com
- *        Company:  Class 1107 of Computer Science and Technology
- *
- * =====================================================================================
- */
-
 #ifndef INCLUDE_VARGS_H_
 #define INCLUDE_VARGS_H_
 
