@@ -104,3 +104,30 @@ void console_write_color(char *cstr, c_color_t bg, c_color_t font)
 	}
 }
 
+void console_copy_from(uint16_t *from, uint8_t *from_x, uint8_t *from_y)
+{
+	int i;
+
+	for(i = 0; i < 80 * 25; i++)
+	{
+		video_memory[i] = *from++;
+	}
+	
+	cursor_x = *from_x;
+	cursor_y = *from_y;
+	move_cursor(cursor_x, cursor_y);	
+
+}
+
+void console_copy_to(uint16_t *to, uint8_t *to_x, uint8_t *to_y)
+{
+	int i;
+
+	for(i = 0; i < 80 * 25; i++)
+	{
+		*to++ = video_memory[i];
+	}
+
+	*to_x = cursor_x;
+	*to_y = cursor_y;
+}

@@ -82,6 +82,13 @@ void tty_print(uint8_t num)
 				tty[num].len --;
 			}
 		}
+		//切换tty窗口
+		else if(c < 0)
+		{
+			//切换
+			tty_switch(-(c + 1));
+		}
+		//输出可打印字符
 		else 
 			printf("%c", c);
 	}
@@ -96,16 +103,38 @@ int tty_thread(void *arg)
 	}
 }
 
+//切换tty
+void tty_switch(uint8_t switch_id)
+{
+	console_copy_to(
+		tty[current_tty].console_buffer.video_memory, 
+		&tty[current_tty].console_buffer.cursor_x, 
+		&tty[current_tty].console_buffer.cursor_y);
+	
+	//切换	
+	current_tty = switch_id;
+	
+	console_copy_from(
+		tty[current_tty].console_buffer.video_memory, 
+		&tty[current_tty].console_buffer.cursor_x, 
+		&tty[current_tty].console_buffer.cursor_y);
+	
+}
+
 void init_tty()
 {
 	int i;	
 	
-	for(i = 0; i < TTY_NUMBER; i++)
+	for(i = TTY_NUMBER - 1; i >= 0; i--)
 	{
 		tty[i].buf_size = 0;	
 		tty[i].point = 0;
-		tty[i].len = 0;
+		tty[i].len = 0;		
+
+		console_clear();
+		tty_print_header(i);
+		console_copy_to(tty[i].console_buffer.video_memory, &tty[i].console_buffer.cursor_x, &tty[i].console_buffer.cursor_y);	
 	}
-	
-	tty_print_header(current_tty);	
+	current_tty = 0;
+	tty_switch(current_tty);
 }

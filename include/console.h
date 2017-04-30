@@ -40,6 +40,10 @@ void console_write_color(char *cstr, c_color_t bg, c_color_t font);
 
 void console_putc(char c);
 
+//屏幕保存函数
+void console_copy_to(uint16_t *to, uint8_t *to_x, uint8_t *to_y);
+void console_copy_from(uint16_t *from, uint8_t *from_x, uint8_t *from_y);
+
 extern uint8_t console_cursor_x;
 extern uint8_t console_cursor_y;
 

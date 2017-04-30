@@ -19,7 +19,7 @@ static uint8_t keymap_size = 0;
 static keyboard_buffer_t keyboard_buffer;
 
 //建立键盘的扫描码映射数量
-static void set_keyboard_map(uint8_t ascii, uint8_t make_1, uint8_t make_2, uint8_t break_1, uint8_t break_2);
+static void set_keyboard_map(int8_t ascii, uint8_t make_1, uint8_t make_2, uint8_t break_1, uint8_t break_2);
 
 //是否打开大小写锁定
 uint8_t caps_lock = 0;
@@ -64,7 +64,6 @@ void keyboard_buffer_read(){
 			keyboard_buffer.count --;
 			return;
 		}
-
 		//功能键
 		switch(byte1){
 			
@@ -84,12 +83,12 @@ void keyboard_buffer_read(){
 			//退格
 			case 0x0E:
 				//console_write("\b \b");
-				tty_putc(keyboard_buffer.tty_id, '\b');
+				tty_putc(current_tty, '\b');
 				return;
 			//Tab
 			case 0x0F:
 				//console_write(tab_blank);
-				tty_write(keyboard_buffer.tty_id, tab_blank);	
+				tty_write(current_tty, tab_blank);	
 				return;
 			default:
 				break;
@@ -100,7 +99,7 @@ void keyboard_buffer_read(){
 		{
 			if(keymap[i].make_1 == byte1 && keymap[i].make_2 == byte2)
 			{
-				uint8_t ascii = keymap[i].ascii;
+				int8_t ascii = keymap[i].ascii;
 				//大小写
 				if(ascii >= 'A' && ascii <= 'Z' && caps_lock == 0)
 					ascii = ascii - 'A' + 'a';
@@ -176,7 +175,7 @@ void keyboard_buffer_read(){
 					}
 				}
 				//console_putc(ascii);
-				tty_putc(keyboard_buffer.tty_id, ascii);
+				tty_putc(current_tty, ascii);
 			}	
 		}
 	}
@@ -202,9 +201,6 @@ void init_keyboard(){
 	keyboard_buffer.count = 0;
 	keyboard_buffer.head = keyboard_buffer.buf;
 	keyboard_buffer.tail = keyboard_buffer.buf;	
-	
-	//初始化tty
-	keyboard_buffer.tty_id = current_tty;
 
 	//扫描表初始化
 	//字母
@@ -274,9 +270,14 @@ void init_keyboard(){
 	set_keyboard_map(' ', 0x36, 0, 0xB6, 0);
 	//回车
 	set_keyboard_map('\n', 0x1C, 0, 0x9C, 0);
+	
+	//F1 F2 F3
+	set_keyboard_map(-1, 0x3B, 0, 0xBB, 0);
+	set_keyboard_map(-2, 0x3C, 0, 0xBC, 0);
+	set_keyboard_map(-3, 0x3D, 0, 0xBD, 0);
 }
 
-static void set_keyboard_map(uint8_t ascii, uint8_t make_1, uint8_t make_2, uint8_t break_1, uint8_t break_2){
+static void set_keyboard_map(int8_t ascii, uint8_t make_1, uint8_t make_2, uint8_t break_1, uint8_t break_2){
 
 	keymap[keymap_size].ascii = ascii;
 	keymap[keymap_size].make_1 = make_1;
