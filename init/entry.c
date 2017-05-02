@@ -12,6 +12,8 @@
 #include "task.h"
 #include "keyboard.h"
 #include "tty.h"
+#include "proc.h"
+#include "tss.h"
 
 void kern_init();
 
@@ -80,24 +82,32 @@ void kern_init()
 	console_clear();
 	printc(c_black, c_light_red, "Welcome to K'OS!\n");	
 	
+	//初始化全局描述符号
 	init_gdt();
 	printc(c_black, c_light_red, "Init gdt finished!\n");
 
+	
+	//物理内存初始化
 	init_pmm();
 	printc(c_black, c_light_red, "Init pmm finished!\n");
 	show_pmm_status();	
 	show_memory_map();
 
+	//虚拟内存初始化
 	init_vmm();
 	printc(c_black, c_light_brown, "Init vmm finished!\n");	
 
+	//中断初始化
 	init_idt();
 	printc(c_black, c_light_brown, "Init idt finished!\n");
 	
+	//内存堆初始化
 	init_heap();
-	test_heap();
+	//test_heap();
 
+	//调度进程初始化
 	init_sched();	
+	
 	//键盘进程打开
 	init_keyboard();	
 
@@ -106,17 +116,25 @@ void kern_init()
 	printc(c_black, c_red, "Interrupt is enable!\n");	
 
 	kernel_thread(keyboard_buffer_handler, NULL);
-	//kernel_thread(thread_proc_b, NULL);	
-	//kernel_thread(thread_proc_a, NULL);
-	//kernel_thread(thread_proc_c, NULL);	
+	
+	/**
+	 * kernel_thread(thread_proc_b, NULL);	
+	 * kernel_thread(thread_proc_a, NULL);
+	 * kernel_thread(thread_proc_c, NULL);	
+	 **/
+
+	//初始化TSS
+	init_tss();
+
+	init_proc(0);
 
 	init_timer(200);
-
 	console_clear();
 
+	//中断窗口
 	init_tty();
 	kernel_thread(tty_thread, NULL);
-
+	
 	while(1){
 		asm volatile("hlt");
 	}
