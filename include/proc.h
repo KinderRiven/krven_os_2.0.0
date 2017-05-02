@@ -10,15 +10,17 @@
 typedef
 struct proc_regs_t{
 
+	//pop start in here
 	uint32_t gs;
 	uint32_t fs;
 	uint32_t es;
 	uint32_t ds;
 	
-	//popad
+	//popad start in here
 	uint32_t edi;
 	uint32_t esi;
 	uint32_t ebp;
+	uint32_t kernel_esp;
 	uint32_t ebx;
 	uint32_t edx;
 	uint32_t ecx;
@@ -30,22 +32,20 @@ struct proc_regs_t{
 	uint32_t eflags;
 	uint32_t esp;
 	uint32_t ss;
-	
 
 } proc_regs_t;
 
 typedef
 struct proc_t{
 	
-	proc_regs_t regs;					//寄存器保存的值 (17)
-	uint16_t ldtr;						//ldtr寄存器的值
+	proc_regs_t regs;					//寄存器保存的值 (18 * 4 = 72字节)
+	uint16_t ldtr;						//ldtr寄存器的值 (2字节)
 	ldt_descriptor_t ldts[LDT_SIZE];	//2个
 	pid_t pid;							//进程id号
 
 }proc_t;
 
 void init_proc(int num);
-
 void restart();
 
 #endif

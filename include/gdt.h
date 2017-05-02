@@ -33,6 +33,8 @@ uint16_t new_tss_descriptor(uint32_t base, uint32_t limit);
 
 extern void gdt_flush(uint32_t);
 
+void gdt_debug(uint16_t idx);
+
 //代码段
 #define DESC_TEXT_INDEX	0x08		
 

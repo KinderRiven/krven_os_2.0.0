@@ -7,7 +7,6 @@ typedef
 struct tss_t
 {
 	uint32_t backlink;
-	
 						//不同权限级的栈
 	uint32_t esp0;
 	uint32_t ss0;
