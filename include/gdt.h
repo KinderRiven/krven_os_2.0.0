@@ -44,6 +44,7 @@ void gdt_debug(uint16_t idx);
 //SEG
 #define SEG_TIL_0	0X00
 #define SEG_TIL_1 	0x04
+
 #define SEG_DPL_0	0x00
 #define SEG_DPL_1	0x01
 #define SEG_DPL_2	0x02
@@ -58,7 +59,8 @@ void gdt_debug(uint16_t idx);
 #define ACCESS_386TGate	0x8F	//386 陷阱门类型值
 
 //TYPE 存取权限 4位
-#define DESC_TYPE_RW 0x02		//读写
+#define DESC_TYPE_RW 0x02		//读、写
+#define DESC_TYPE_C  0x08		//执行
 #define DESC_TYPE_RC 0x0A		//执行、读
 
 //S=1 (数据段，代码段)

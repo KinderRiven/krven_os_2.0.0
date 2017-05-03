@@ -9,7 +9,7 @@ idt_flush:
 %macro ISR_NOERRCODE 1
 [GLOBAL isr%1]
 isr%1:
-	cli
+	cli						;关中断
 	push 0					;压入错误号
 	push %1					;压入中断号
 	jmp	isr_common_stub
@@ -107,9 +107,10 @@ isr_common_stub:
 	mov ss, ax
 	
 	push esp	
-	call isr_handler
-	add	 esp, 4
 	
+	call isr_handler
+	
+	add	 esp, 4
 	pop	ebx
 	mov	ds, bx
 	mov	es,	bx

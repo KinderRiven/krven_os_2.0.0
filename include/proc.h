@@ -27,6 +27,8 @@ struct proc_regs_t{
 	uint32_t eax;
 	
 	uint32_t retaddr;
+	
+	//iretd
 	uint32_t eip;
 	uint32_t cs;
 	uint32_t eflags;

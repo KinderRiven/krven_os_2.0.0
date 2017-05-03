@@ -17,6 +17,7 @@ REGS_ECX	EQU		REGS_EDX + 4	;40
 REGS_EAX	EQU		REGS_ECX + 4	;44
 
 REGS_ADDR	EQU		REGS_EAX + 4	;48
+
 REGS_EIP	EQU		REGS_ADDR+ 4	;52
 REGS_CS		EQU		REGS_EIP + 4	;56
 REGS_FLAG	EQU		REGS_CS	 + 4	;60
@@ -35,15 +36,14 @@ restart:
 
 	mov		esp, [current_proc]				;让esp指向current_proc所指向的进程表
 	lldt	[esp + PROC_LDTR]				;更新ldt寄存器
-	lea		eax, [esp + REGS_TOP]	
+	lea		eax, [esp + REGS_TOP]				
 	mov		dword [tss + TSS3_S_SP0], eax
 
 	pop		gs
 	pop		fs
 	pop		es
 	pop		ds
-	popad
+	popad									;EDI,ESI,EBP,ESP,EBX,EDX,ECX,EAX.
 	
 	add		esp, 4
-	iretd									;iretd 弹出eip cs eflags
-
+	iretd									;iretd 弹出eip cs eflags esp ss
