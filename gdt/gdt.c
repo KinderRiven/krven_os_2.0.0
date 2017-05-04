@@ -17,12 +17,15 @@ void init_gdt()
 	gdt_set_gate(0,	0,	0,	0,	0);
 	
 	//代码段 1 (8)
-	gdt_set_gate(1,	0,	0xFFFFFFFF,	DESC_TYPE_C | DESC_S_1 | DESC_DPL_0 | DESC_ALWAYS_1, DESC_G_4096 | DESC_DB | DESC_AVL);
+	gdt_set_gate(1,	0,	0xFFFFFFFF,	TYPE_RC | DPL_0, DB_32 | G_4096);
 	
 	//数据段 2 (16)
-	gdt_set_gate(2,	0,	0xFFFFFFFF,	DESC_TYPE_RW | DESC_S_1 | DESC_DPL_0 | DESC_ALWAYS_1, DESC_G_4096 | DESC_DB | DESC_AVL);	
+	gdt_set_gate(2,	0,	0xFFFFFFFF,	TYPE_RW | DPL_0, DB_32 | G_4096);
 
-	gdt_idx = 3;
+	//屏幕
+	gdt_set_gate(3, 0xC00B8000, 0xFFFF, TYPE_RW | DPL_3, DB_32 | G_1);
+	
+	gdt_idx = 4;
 	gdt_flush((uint32_t)&gdt_ptr);
 
 }
@@ -31,7 +34,7 @@ void init_gdt()
 //为一个进程申请一个ldt描述符,并返回索引
 uint16_t new_ldt_descriptor(uint32_t base, uint32_t limit)
 {
-	gdt_set_gate(gdt_idx, base, limit, ACCESS_LDT, DESC_G_1 | DESC_AVL);
+	gdt_set_gate(gdt_idx, base, limit, TYPE_LDT, G_1 | DB_32);
 	gdt_idx ++;
 	return (gdt_idx - 1) << 3;
 }
@@ -39,7 +42,7 @@ uint16_t new_ldt_descriptor(uint32_t base, uint32_t limit)
 //添加一个TSS任务门
 uint16_t new_tss_descriptor(uint32_t base, uint32_t limit)
 {
-	gdt_set_gate(gdt_idx, base, limit, ACCESS_386TSS, DESC_G_1 | DESC_AVL);	
+	gdt_set_gate(gdt_idx, base, limit, TYPE_386TSS, G_1 | DB_32);	
 	gdt_idx ++;
 	return (gdt_idx - 1) << 3;
 }

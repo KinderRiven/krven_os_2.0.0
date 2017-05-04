@@ -97,9 +97,6 @@ void kern_init()
 	init_vmm();
 	printc(c_black, c_light_brown, "Init vmm finished!\n");	
 
-	init_tss();
-	init_proc(0);
-
 	//中断初始化
 	init_idt();
 	printc(c_black, c_light_brown, "Init idt finished!\n");
@@ -125,12 +122,11 @@ void kern_init()
 	 * kernel_thread(thread_proc_a, NULL);
 	 * kernel_thread(thread_proc_c, NULL);	
 	 **/
+	//init_timer(200);
 	
-	//init_tss();
-	//init_proc(0);
+	init_tss();
+	init_proc(0);
 
-
-	init_timer(200);
 	console_clear();
 
 	//中断窗口

@@ -18,17 +18,17 @@ isr%1:
 ;有错误代码的中断
 %macro ISR_ERRCODE 1
 [GLOBAL isr%1]
-isr%1:
+isr%1:						
 	cli
 	push %1
-	jmp	isr_common_stub
+	jmp	isr_common_stub		
 %endmacro
 
-%macro IRQ 2
+%macro IRQ	2
 [GLOBAL irq%1]
 irq%1:
 	cli
-	push byte 0
+	push byte 0						
 	push byte %2
 	jmp	 irq_common_stub
 %endmacro
@@ -73,7 +73,33 @@ ISR_NOERRCODE 31
 ISR_NOERRCODE 255
 
 ; 32～255 用户自定义
-IRQ   0,    32 	; 电脑系统计时器
+;IRQ   0,    32 	; 电脑系统计时器
+[GLOBAL irq0]
+irq0:
+	
+	sub		esp, 4	; 保存现场
+	pushad
+	push	ds
+	push	es
+	push	fs	
+	push	gs
+
+	mov		dx, ss	; 建立内核状态
+	mov		ds, dx
+	mov		es,	dx
+
+	;inc	byte [gs:0]
+	;mov	al, 0x20
+	;out	0x20, al
+		
+	pop		gs		; 恢复现场
+	pop		fs
+	pop		es
+	pop		ds
+	popad
+	add		esp, 4
+	iretd
+
 IRQ   1,    33 	; 键盘
 IRQ   2,    34 	; 与 IRQ9 相接，MPU-401 MD 使用
 IRQ   3,    35 	; 串口设备
@@ -122,12 +148,13 @@ isr_common_stub:
 	add esp, 8
 	iret
 
+
 [GLOBAL irq_common_stub]
 [EXTERN irq_handler]
 
 irq_common_stub:
 	
-	pusha
+	pusha			;保存现场
 	mov	ax, ds
 	push eax
 
@@ -140,7 +167,7 @@ irq_common_stub:
 	
 	push esp	
 	call irq_handler
-	add	 esp, 4
+	add	 esp, 4		;恢复现场
 	
 	pop	ebx
 	mov	ds, bx
