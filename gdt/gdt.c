@@ -17,7 +17,7 @@ void init_gdt()
 	gdt_set_gate(0,	0,	0,	0,	0);
 	
 	//代码段 1 (8)
-	gdt_set_gate(1,	0,	0xFFFFFFFF,	DESC_TYPE_RC | DESC_S_1 | DESC_DPL_0 | DESC_ALWAYS_1, DESC_G_4096 | DESC_DB | DESC_AVL);
+	gdt_set_gate(1,	0,	0xFFFFFFFF,	DESC_TYPE_C | DESC_S_1 | DESC_DPL_0 | DESC_ALWAYS_1, DESC_G_4096 | DESC_DB | DESC_AVL);
 	
 	//数据段 2 (16)
 	gdt_set_gate(2,	0,	0xFFFFFFFF,	DESC_TYPE_RW | DESC_S_1 | DESC_DPL_0 | DESC_ALWAYS_1, DESC_G_4096 | DESC_DB | DESC_AVL);	

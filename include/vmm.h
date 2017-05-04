@@ -32,9 +32,9 @@ typedef uint32_t pgd_t;
 
 typedef uint32_t pte_t;
 
-#define PGD_SIZE (PAGE_SIZE / sizeof(pgd_t))
+#define PGD_SIZE (PAGE_SIZE / sizeof(pgd_t))	// 4096 字节 / 4 字节
 
-#define PTE_SIZE (PAGE_SIZE / sizeof(pte_t))
+#define PTE_SIZE (PAGE_SIZE / sizeof(pte_t))	// 4096 字节 / 4 字节
 
 #define PTE_COUNT 128
 

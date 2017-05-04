@@ -96,8 +96,7 @@ void kern_init()
 	//虚拟内存初始化
 	init_vmm();
 	printc(c_black, c_light_brown, "Init vmm finished!\n");	
-	
-	//初始化TSS	
+
 	init_tss();
 	init_proc(0);
 
@@ -126,6 +125,10 @@ void kern_init()
 	 * kernel_thread(thread_proc_a, NULL);
 	 * kernel_thread(thread_proc_c, NULL);	
 	 **/
+	
+	//init_tss();
+	//init_proc(0);
+
 
 	init_timer(200);
 	console_clear();

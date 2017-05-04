@@ -43,6 +43,7 @@ restart:
 	pop		fs
 	pop		es
 	pop		ds
+	
 	popad									;EDI,ESI,EBP,ESP,EBX,EDX,ECX,EAX.
 	
 	add		esp, 4
