@@ -27,7 +27,7 @@ uint8_t caps_lock = 0;
 //是否按住了shift
 uint8_t shift = 0;
 
-void keyboard_handler(pt_regs *regs){
+void keyboard_handler(){
 	
 	uint8_t byte = inb(0x60);
 	//printf("%0x\n", byte);
@@ -184,7 +184,7 @@ void keyboard_buffer_read(){
 }
 
 
-int keyboard_buffer_handler(void *arg){
+void keyboard_buffer_start(){
 
 	while(1){	
 		keyboard_buffer_read();		

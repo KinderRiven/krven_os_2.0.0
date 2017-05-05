@@ -5,7 +5,7 @@
 
 void init_keyboard();
 void keyboard_handler();
-int  keyboard_buffer_handler(void *arg);
+void keyboard_buffer_start();
 
 //键盘映射
 typedef

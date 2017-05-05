@@ -24,7 +24,6 @@ void parse_command(uint8_t num)
 {
 
 	//command solver
-	
 
 	//缓冲区初始化
 	printf("\n");
@@ -95,8 +94,10 @@ void tty_print(uint8_t num)
 }
 
 //tty进程
-int tty_thread(void *arg)
+void tty_start()
 {
+	init_tty();
+
 	while(1)
 	{
 		tty_print(current_tty);		

@@ -34,6 +34,7 @@ void tty_putc(int num, char c);
 void tty_write(int num, char* cstr);
 void tty_switch(uint8_t switch_id);
 
-int tty_thread(void *arg);
+//开启tty进程
+void tty_start();
 
 #endif

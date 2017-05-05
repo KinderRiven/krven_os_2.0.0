@@ -8,21 +8,15 @@
 #include "vmm.h"
 #include "multiboot.h"
 #include "idt.h"
-#include "sched.h"
-#include "task.h"
 #include "keyboard.h"
 #include "tty.h"
 #include "proc.h"
 #include "tss.h"
+#include "kernel.h"
 
 void kern_init();
-
 multiboot_t *glb_mboot_ptr;
 
-//内核栈
-char kern_stack[STACK_SIZE];
-
-uint32_t kern_stack_top;
 
 //临时页目录和页表
 __attribute__((section(".init.data"))) pgd_t *pgd_tmp  = (pgd_t *) 0x1000;
@@ -54,28 +48,13 @@ void kern_entry(){
 	asm volatile("mov %0, %%cr0" : : "r" (cr0));
 
 	//切换到内核栈
-	kern_stack_top = ((uint32_t)kern_stack + STACK_SIZE) & 0xFFFFFFF0;
+	kernel_stack_top = ((uint32_t)kernel_stack + KERNEL_STACK_SIZE) & 0xFFFFFFF0;
 	asm volatile("mov %0, %%esp\n\t"
-					"xor %%ebp, %%ebp" : : "r"(kern_stack_top));
+					"xor %%ebp, %%ebp" : : "r"(kernel_stack_top));
 	
 	glb_mboot_ptr = mboot_ptr_tmp + PAGE_OFFSET;
 	kern_init();
 }
-
-int thread_proc_b(void *arg){
-	
-	while(1){
-		printc(c_black, c_red, "B");
-	}
-}
-
-int thread_proc_a(void *arg){
-	
-	while(1){
-		printc(c_black, c_blue, "A");
-	}
-
-}	
 
 void kern_init()
 {
@@ -103,35 +82,24 @@ void kern_init()
 	
 	//内存堆初始化
 	init_heap();
-	//test_heap();
-
-	//调度进程初始化
-	init_sched();	
 	
-	//键盘进程打开
-	init_keyboard();	
-
 	//打开中断	
 	enable_intr();
 	printc(c_black, c_red, "Interrupt is enable!\n");	
 
-	kernel_thread(keyboard_buffer_handler, NULL);
-	
-	/**
-	 * kernel_thread(thread_proc_b, NULL);	
-	 * kernel_thread(thread_proc_a, NULL);
-	 * kernel_thread(thread_proc_c, NULL);	
-	 **/
-	//init_timer(200);
-	
+	//初始化时钟中断
+	init_timer(0);
+
+	//初始化键盘中断
+	init_keyboard();
+
 	init_tss();
-	init_proc(0);
-
 	console_clear();
-
-	//中断窗口
+	
 	init_tty();
-	kernel_thread(tty_thread, NULL);
+	new_proc(tty_start);
+	new_proc(keyboard_buffer_start);
+	
 	
 	while(1){
 		asm volatile("hlt");

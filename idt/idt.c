@@ -12,22 +12,22 @@ static void idt_set_gate(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags
 
 extern void idt_flush(uint32_t);
 
-void isr_handler(pt_regs *regs){
-		
-	if(interrupt_handlers[regs -> int_no]){
-		interrupt_handlers[regs -> int_no](regs);
-	} else {
-		printc(c_black, c_red, "Unhandler isr: %d\n", regs -> int_no);
-	}
+void isr_handler(proc_regs_t *regs){
+
+	printf("error : %d\n", regs -> int_no);
+	while(1);
 }
 
-void irq_handler(pt_regs *regs){
-
+void irq_handler(proc_regs_t *regs){
+	
+	//发送重设信号
+	
 	if(regs -> int_no >= 40){
 		outb(0xA0, 0x20);
 	}
+	
 	outb(0x20, 0x20);
-
+	
 	if(interrupt_handlers[regs -> int_no]){
 		interrupt_handlers[regs -> int_no](regs);
 	}

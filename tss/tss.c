@@ -14,7 +14,7 @@ void init_tss(){
 	//向GDT申请一个TSS系统描述符
 	tss_ptr = new_tss_descriptor((uint32_t)&tss, sizeof(tss) - 1);
 	
-	tss.ss0 = DESC_DATA_INDEX;
+	tss.ss0 = KERNEL_DA_INDEX;
 	tss.iobase = sizeof(tss);
 	//刷新tr寄存器
 	tss_flush((uint32_t)&tss_ptr);

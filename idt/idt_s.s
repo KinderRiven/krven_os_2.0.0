@@ -1,3 +1,43 @@
+[EXTERN kernel_stack_top]
+[EXTERN current_proc]
+[EXTERN tss]
+
+;--------------------------------------------
+REGS_GS 	EQU 	0			  	;0
+REGS_FS		EQU		REGS_GS  + 4	;4
+REGS_ES		EQU 	REGS_FS  + 4	;8
+REGS_DS		EQU		REGS_ES  + 4	;12
+
+;popad
+REGS_EDI	EQU		REGS_DS  + 4	;16
+REGS_ESI	EQU		REGS_EDI + 4	;20
+REGS_EBP	EQU		REGS_ESI + 4	;24
+KERNEL_ESP	EQU		REGS_EBP + 4	;28
+REGS_EBX	EQU		KERNEL_ESP + 4	;32
+REGS_EDX	EQU		REGS_EBX + 4	;36
+REGS_ECX	EQU		REGS_EDX + 4	;40
+REGS_EAX	EQU		REGS_ECX + 4	;44
+
+REGS_ADDR	EQU		REGS_EAX + 4	;48
+
+INT_NO		EQU		REGS_ADDR+ 4	;52
+ERR_CODE	EQU		INT_NO	 + 4	;56
+
+REGS_EIP	EQU		ERR_CODE + 4	;60
+REGS_CS		EQU		REGS_EIP + 4	;64
+REGS_FLAG	EQU		REGS_CS	 + 4	;68
+REGS_ESP	EQU		REGS_FLAG+ 4	;72
+REGS_SS		EQU		REGS_ESP + 4	;76
+REGS_TOP	EQU		REGS_SS	 + 4	;84
+PROC_LDTR	EQU		REGS_SS  + 4	;84
+;----------------------------------------------	
+TSS3_S_SP0	EQU		4
+;----------------------------------------------
+
+
+;%include "const.inc"
+
+;刷行idtr寄存器
 [GLOBAL idt_flush]
 idt_flush:
 	mov	eax, [esp + 4]
@@ -5,6 +45,7 @@ idt_flush:
 	ret
 
 
+;用多行宏定义去定义更加方便
 ;没有错误代码的中断
 %macro ISR_NOERRCODE 1
 [GLOBAL isr%1]
@@ -12,15 +53,15 @@ isr%1:
 	cli						;关中断
 	push 0					;压入错误号
 	push %1					;压入中断号
-	jmp	isr_common_stub
+	jmp	isr_common_stub		
 %endmacro
 
 ;有错误代码的中断
 %macro ISR_ERRCODE 1
 [GLOBAL isr%1]
 isr%1:						
-	cli
-	push %1
+	cli						;自动压入错误号
+	push %1					;压入中断号
 	jmp	isr_common_stub		
 %endmacro
 
@@ -28,8 +69,8 @@ isr%1:
 [GLOBAL irq%1]
 irq%1:
 	cli
-	push byte 0						
-	push byte %2
+	push 0					;压入错误号			
+	push %2					;压入中断号
 	jmp	 irq_common_stub
 %endmacro
 
@@ -73,33 +114,7 @@ ISR_NOERRCODE 31
 ISR_NOERRCODE 255
 
 ; 32～255 用户自定义
-;IRQ   0,    32 	; 电脑系统计时器
-[GLOBAL irq0]
-irq0:
-	
-	sub		esp, 4	; 保存现场
-	pushad
-	push	ds
-	push	es
-	push	fs	
-	push	gs
-
-	mov		dx, ss	; 建立内核状态
-	mov		ds, dx
-	mov		es,	dx
-
-	;inc	byte [gs:0]
-	;mov	al, 0x20
-	;out	0x20, al
-		
-	pop		gs		; 恢复现场
-	pop		fs
-	pop		es
-	pop		ds
-	popad
-	add		esp, 4
-	iretd
-
+IRQ	  0,    32	; 时钟中断
 IRQ   1,    33 	; 键盘
 IRQ   2,    34 	; 与 IRQ9 相接，MPU-401 MD 使用
 IRQ   3,    35 	; 串口设备
@@ -121,32 +136,37 @@ IRQ  15,    47 	; IDE1 传输控制使用
 
 isr_common_stub:
 	
-	pusha
-	mov	ax, ds
-	push eax
+	; 若特权级发生变化 依次压入: (error code) ss esp eflags cs eip
+	; 否则压入 :  (error code) eflags cs eip
+	; 从这里开始进行现场的保护	
+	
+	push	0	
+	push	0
 
-	mov	ax, 0x10	;加载数据段描述表
-	mov	ds, ax
-	mov es, ax
-	mov fs, ax
-	mov	gs, ax
-	mov ss, ax
-	
-	push esp	
-	
-	call isr_handler
-	
-	add	 esp, 4
-	pop	ebx
-	mov	ds, bx
-	mov	es,	bx
-	mov	fs, bx
-	mov	gs,	bx
-	mov	ss,	bx
+	sub		esp, 4
+	pushad
+	push	ds
+	push	es
+	push	fs	
+	push	gs
 
-	popa
-	add esp, 8
-	iret
+	; 恢复到内核态
+	mov		dx, ss
+	mov		ds, dx
+	mov		es,	dx
+
+	;inc	byte [gs:0]
+	;mov	al, 0x20
+	;out	0x20, al
+	
+	; 恢复现场
+	pop		gs
+	pop		fs
+	pop		es
+	pop		ds
+	popad
+	add		esp, 12
+	iretd
 
 
 [GLOBAL irq_common_stub]
@@ -154,31 +174,50 @@ isr_common_stub:
 
 irq_common_stub:
 	
-	pusha			;保存现场
-	mov	ax, ds
-	push eax
-
-	mov	ax, 0x10	;加载数据段描述表
-	mov	ds, ax
-	mov es, ax
-	mov fs, ax
-	mov	gs, ax
-	mov ss, ax
+	; 进入中断
+	; 若特权级发生变化 依次压入: (error code) ss esp eflags cs eip
+	; 否则压入 :  (error code) eflags cs eip
 	
-	push esp	
-	call irq_handler
-	add	 esp, 4		;恢复现场
-	
-	pop	ebx
-	mov	ds, bx
-	mov	es,	bx
-	mov	fs, bx
-	mov	gs,	bx
-	mov	ss,	bx
+	; 从这里开始进行现场的保护	
+	sub		esp, 4
+	pushad
+	push	ds
+	push	es
+	push	fs	
+	push	gs
 
-	popa
-	add esp, 8
-	iret
+	; 恢复到内核态
+	mov		dx, ss
+	mov		ds, dx
+	mov		es,	dx
+
+	; debug函数
+	;inc	byte [gs:0]
+	;mov	al, 0x20
+	;out	0x20, al
+
+	; 恢复到内核栈
+	mov		eax, esp
+	mov		esp, kernel_stack_top
+
+	; 压入寄存器参数
+	push	eax
+	call	irq_handler
+
+	; 离开内核栈
+	mov		esp, [current_proc]
+	lldt	[esp + PROC_LDTR]
+	lea		eax, [esp + REGS_TOP]
+	mov		dword [tss + TSS3_S_SP0], eax
+
+	; 恢复现场
+	pop		gs
+	pop		fs
+	pop		es
+	pop		ds
+	popad
+	add		esp, 12
+	iretd
 
 .end:
 

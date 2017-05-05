@@ -4,56 +4,83 @@
 #include "ldt.h"
 #include "vmm.h"
 #include "pmm.h"
+#include "sched.h"
 
-proc_t procs[1];
-proc_t *current_proc;
-
-uint8_t proc_stack[PROC_STACK_SIZE];
+proc_t procs[PROC_MAX_NUM];
+char proc_stack[PROC_MAX_NUM][PROC_STACK_SIZE];
+int proc_num = 0;
 
 static void debug_proc();
 
+
+//测试
+
 void proc1()
 {
-	printf("Proc A is running!\n");
-	while(1){}
+	int i, j;
+	
+	while(1){
+		printc(c_black, c_red, "A");
+		for(i = 0; i < 10000; i++)
+			for(j = 0; j < 1000; j++);
+	}
 
 }
 
-void init_proc(int num)
+void proc2()
+{
+	int i, j;
+	
+	while(1){
+		printc(c_black, c_green, "B");
+		for(i = 0; i < 10000; i++)
+			for(j = 0; j < 1000; j++);
+	}
+
+}
+
+void proc_start()
+{
+	//new_proc(proc1);
+	//new_proc(proc2);
+	
+	//从第一个进程开始运行
+	current_proc = &procs[0];
+	restart();
+}
+
+pid_t new_proc(proc_fun fun)
 {
 
 	//建立进程的LDT (修改DPL在低权限下运行)
 
 	//代码段CS
-	ldt_set_descriptor(&procs[num].ldts[0], 0, 0xFFFFFFFF, 
+	ldt_set_descriptor(&procs[proc_num].ldts[0], 0, 0xFFFFFFFF, 
 				TYPE_RC | DPL_1, DB_32 | G_4096); 
 	
 	//数据段DS
-	ldt_set_descriptor(&procs[num].ldts[1], 0, 0xFFFFFFFF, 
+	ldt_set_descriptor(&procs[proc_num].ldts[1], 0, 0xFFFFFFFF, 
 				TYPE_RW | DPL_1, DB_32 | G_4096); 
 	
 	//在GDT中创建LDT描述符
-	procs[num].ldtr = new_ldt_descriptor((uint32_t)procs[num].ldts, LDT_SIZE * sizeof(ldt_descriptor_t) - 1);	
+	procs[proc_num].ldtr = new_ldt_descriptor((uint32_t)procs[proc_num].ldts, LDT_SIZE * sizeof(ldt_descriptor_t) - 1);	
 
 	//初始化段寄存器
-	procs[num].regs.cs = USER_CS_INDEX | TI_1 | RPL_1;
+	procs[proc_num].regs.cs = USER_CS_INDEX | TI_1 | RPL_1;
 
-	procs[num].regs.ds = USER_DA_INDEX | TI_1 | RPL_1;
-	procs[num].regs.es = USER_DA_INDEX | TI_1 | RPL_1;
-	procs[num].regs.fs = USER_DA_INDEX | TI_1 | RPL_1;
-	procs[num].regs.ss = USER_DA_INDEX | TI_1 | RPL_1;
-	procs[num].regs.gs = KERNEL_VIDEO_INDEX   | RPL_1;
+	procs[proc_num].regs.ds = USER_DA_INDEX | TI_1 | RPL_1;
+	procs[proc_num].regs.es = USER_DA_INDEX | TI_1 | RPL_1;
+	procs[proc_num].regs.fs = USER_DA_INDEX | TI_1 | RPL_1;
+	procs[proc_num].regs.ss = USER_DA_INDEX | TI_1 | RPL_1;
+	procs[proc_num].regs.gs = KERNEL_VIDEO_INDEX   | RPL_1;
 
-	procs[num].regs.eip = (uint32_t) proc1;	
-	procs[num].regs.esp = (uint32_t) proc_stack + PROC_STACK_SIZE - 10;	
-	procs[num].regs.eflags = 0x1202;
+	procs[proc_num].regs.eip = (uint32_t) fun;	
+	procs[proc_num].regs.esp = (uint32_t) proc_stack[proc_num] + PROC_STACK_SIZE - 10;	
+	procs[proc_num].regs.eflags = 0x1202;
 
-	current_proc = &procs[0];
-	debug_proc(current_proc);	
-
-	restart();
-	
-	while(1){};
+	//debug_proc(&procs[proc_num]);
+	proc_num ++;
+	return proc_num - 1;
 }
 
 static void debug_proc(proc_t *proc){

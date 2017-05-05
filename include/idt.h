@@ -2,6 +2,7 @@
 #define INCLUDE_IDT_H_
 
 #include "types.h"
+#include "proc.h"
 
 void init_idt();
 void enable_intr();
@@ -25,35 +26,13 @@ struct idt_ptr_t{
 
 } __attribute__((packed)) idt_ptr_t;
 
-typedef					//寄存器
-struct pt_regs_t{
-	
-	uint32_t ds;		//保存用户数据段描述符号
-	uint32_t edi;		//从edi到eax由pusha压入
-	uint32_t esi;
-	uint32_t ebp;
-	uint32_t esp;
-	uint32_t ebx;
-	uint32_t edx;
-	uint32_t ecx;
-	uint32_t eax;
-	uint32_t int_no;	
-	uint32_t err_code;
-	uint32_t eip;		//处理器自动压入
-	uint32_t cs;
-	uint32_t eflags;
-	uint32_t useresp;
-	uint32_t ss;
-
-} pt_regs;
-
-typedef void (*interrupt_handler_t)(pt_regs *);
+typedef void (*interrupt_handler_t)(proc_regs_t *);
 
 //注册一个中断函数
 void register_interrupt_handler(uint8_t n, interrupt_handler_t h);
 
 //调用中断处理
-void isr_handler(pt_regs *regs);
+void isr_handler(proc_regs_t *);
 
 
 // 声明中断处理函数 0-19 属于 CPU 的异常中断
@@ -97,7 +76,7 @@ void isr31();
 void isr255();
 
 // IRQ 处理函数
-void irq_handler(pt_regs *regs);
+void irq_handler(proc_regs_t *);
 
 // 定义IRQ
 #define  IRQ0     32 	// 电脑系统计时器
