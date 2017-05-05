@@ -1,6 +1,7 @@
 #include "idt.h"
 #include "string.h"
 #include "stdio.h"
+#include "syscall.h"
 
 idt_entry_t idt_entries[256];
 
@@ -14,14 +15,13 @@ extern void idt_flush(uint32_t);
 
 void isr_handler(proc_regs_t *regs){
 
-	printf("error : %d\n", regs -> int_no);
+	printc(c_black, c_light_red, "There is a erro handler : %d\n", regs -> int_no);
 	while(1);
 }
 
 void irq_handler(proc_regs_t *regs){
 	
 	//发送重设信号
-	
 	if(regs -> int_no >= 40){
 		outb(0xA0, 0x20);
 	}
@@ -31,6 +31,13 @@ void irq_handler(proc_regs_t *regs){
 	if(interrupt_handlers[regs -> int_no]){
 		interrupt_handlers[regs -> int_no](regs);
 	}
+}
+
+void sys_call_handler(uint32_t sys_call_id){
+	
+	printf("%d\n", sys_call_id);	
+	sys_call_table[sys_call_id](NULL);
+
 }
 
 void init_idt(){
@@ -107,6 +114,9 @@ void init_idt(){
 	idt_set_gate(45, (uint32_t)irq13, 0x08, 0x8E);
 	idt_set_gate(46, (uint32_t)irq14, 0x08, 0x8E);
 	idt_set_gate(47, (uint32_t)irq15, 0x08, 0x8E);
+
+	//系统调用
+	idt_set_gate(48, (uint32_t)sys_call, 0x08, 0x8E);
 	
 	// 255 将来用于实现系统调用
 	idt_set_gate(255, (uint32_t)isr255, 0x08, 0x8E);

@@ -1,4 +1,5 @@
 [BITS 32]
+[SECTION .text]
 
 ;--------------------------------------------
 REGS_GS 	EQU 	0			  	;0
@@ -36,8 +37,8 @@ TSS3_S_SP0	EQU		4
 
 [EXTERN current_proc]
 [EXTERN tss]
-[GLOBAL restart]
-restart:
+[GLOBAL first_proc_start]
+first_proc_start:
 
 	mov		esp, [current_proc]				;让esp指向current_proc所指向的进程表
 	lldt	[esp + PROC_LDTR]				;更新ldt寄存器

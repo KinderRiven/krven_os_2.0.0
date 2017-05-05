@@ -12,43 +12,6 @@ int proc_num = 0;
 
 static void debug_proc();
 
-
-//测试
-
-void proc1()
-{
-	int i, j;
-	
-	while(1){
-		printc(c_black, c_red, "A");
-		for(i = 0; i < 10000; i++)
-			for(j = 0; j < 1000; j++);
-	}
-
-}
-
-void proc2()
-{
-	int i, j;
-	
-	while(1){
-		printc(c_black, c_green, "B");
-		for(i = 0; i < 10000; i++)
-			for(j = 0; j < 1000; j++);
-	}
-
-}
-
-void proc_start()
-{
-	//new_proc(proc1);
-	//new_proc(proc2);
-	
-	//从第一个进程开始运行
-	current_proc = &procs[0];
-	restart();
-}
-
 pid_t new_proc(proc_fun fun)
 {
 
@@ -79,7 +42,7 @@ pid_t new_proc(proc_fun fun)
 	procs[proc_num].regs.eflags = 0x1202;
 
 	//debug_proc(&procs[proc_num]);
-	proc_num ++;
+	procs[proc_num].pid = proc_num ++;
 	return proc_num - 1;
 }
 
@@ -87,6 +50,6 @@ static void debug_proc(proc_t *proc){
 
 	printf("[ds/es/fs/gs] is  0x%04X 0x%04X 0x%04X 0x%04X\n", 
 			proc -> regs.ds, proc -> regs.es, proc -> regs.fs, proc -> regs.gs);
-	printf("[cs:eip] is 0x%04X : 0x%X (0x%X)\n", proc -> regs.cs, proc -> regs.eip, proc1);
+	printf("[cs:eip] is 0x%04X : 0x%X\n", proc -> regs.cs, proc -> regs.eip);
 	printf("[ss:esp] is 0x%04X : 0x%X\n", proc -> regs.ss, proc -> regs.esp);
 }

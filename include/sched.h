@@ -6,5 +6,6 @@
 extern proc_t* current_proc;
 
 void schedule();
+void init_schedule();
 
 #endif

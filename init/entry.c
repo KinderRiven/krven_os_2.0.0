@@ -13,6 +13,7 @@
 #include "proc.h"
 #include "tss.h"
 #include "kernel.h"
+#include "sched.h"
 
 void kern_init();
 multiboot_t *glb_mboot_ptr;
@@ -82,9 +83,10 @@ void kern_init()
 	
 	//内存堆初始化
 	init_heap();
+	//test_heap();
+	//while(1);
 	
 	//打开中断	
-	enable_intr();
 	printc(c_black, c_red, "Interrupt is enable!\n");	
 
 	//初始化时钟中断
@@ -93,13 +95,20 @@ void kern_init()
 	//初始化键盘中断
 	init_keyboard();
 
+	//初始化TSS进程表
 	init_tss();
+
+	//清屏
 	console_clear();
 	
-	init_tty();
+	//新建tty窗口程序
 	new_proc(tty_start);
-	new_proc(keyboard_buffer_start);
 	
+	//新建keyboard程序
+	new_proc(keyboard_buffer_start);
+
+	init_schedule();
+	printf("Hello World!");	
 	
 	while(1){
 		asm volatile("hlt");

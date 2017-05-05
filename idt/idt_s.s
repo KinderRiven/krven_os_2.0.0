@@ -1,3 +1,6 @@
+[BITS 32]
+[SECTION .text]
+
 [EXTERN kernel_stack_top]
 [EXTERN current_proc]
 [EXTERN tss]
@@ -33,9 +36,6 @@ PROC_LDTR	EQU		REGS_SS  + 4	;84
 ;----------------------------------------------	
 TSS3_S_SP0	EQU		4
 ;----------------------------------------------
-
-
-;%include "const.inc"
 
 ;刷行idtr寄存器
 [GLOBAL idt_flush]
@@ -130,19 +130,17 @@ IRQ  12,    44 	; 接 PS/2 鼠标，也可设定给其他硬件
 IRQ  13,    45 	; 协处理器使用
 IRQ  14,    46 	; IDE0 传输控制使用
 IRQ  15,    47 	; IDE1 传输控制使用
+				; sys_call 16,48
 
 [GLOBAL isr_common_stub]
 [EXTERN isr_handler]
-
 isr_common_stub:
 	
+	; 进入中断
 	; 若特权级发生变化 依次压入: (error code) ss esp eflags cs eip
 	; 否则压入 :  (error code) eflags cs eip
-	; 从这里开始进行现场的保护	
 	
-	push	0	
-	push	0
-
+	; 从这里开始进行现场的保护	
 	sub		esp, 4
 	pushad
 	push	ds
@@ -155,10 +153,25 @@ isr_common_stub:
 	mov		ds, dx
 	mov		es,	dx
 
+	; debug函数
 	;inc	byte [gs:0]
 	;mov	al, 0x20
 	;out	0x20, al
-	
+
+	; 恢复到内核栈
+	mov		eax, esp
+	mov		esp, kernel_stack_top
+
+	; 压入寄存器参数
+	push	eax
+	call	isr_handler
+
+	; 离开内核栈
+	mov		esp, [current_proc]
+	lldt	[esp + PROC_LDTR]
+	lea		eax, [esp + REGS_TOP]
+	mov		dword [tss + TSS3_S_SP0], eax
+
 	; 恢复现场
 	pop		gs
 	pop		fs
@@ -167,7 +180,6 @@ isr_common_stub:
 	popad
 	add		esp, 12
 	iretd
-
 
 [GLOBAL irq_common_stub]
 [EXTERN irq_handler]
@@ -203,6 +215,54 @@ irq_common_stub:
 	; 压入寄存器参数
 	push	eax
 	call	irq_handler
+
+	; 离开内核栈
+	mov		esp, [current_proc]
+	lldt	[esp + PROC_LDTR]
+	lea		eax, [esp + REGS_TOP]
+	mov		dword [tss + TSS3_S_SP0], eax
+
+	; 恢复现场
+	pop		gs
+	pop		fs
+	pop		es
+	pop		ds
+	popad
+	add		esp, 12
+	iretd
+
+[GLOBAL sys_call]
+[EXTERN sys_call_handler]
+sys_call:
+
+	cli
+	; eax里面放着存在的中断号
+	push	0
+	push	48	
+	
+	; 进入中断
+	; 若特权级发生变化 依次压入: (error code) ss esp eflags cs eip
+	; 否则压入 :  (error code) eflags cs eip
+	
+	; 从这里开始进行现场的保护	
+	sub		esp, 4
+	pushad
+	push	ds
+	push	es
+	push	fs	
+	push	gs
+
+	; 恢复到内核态
+	mov		dx, ss
+	mov		ds, dx
+	mov		es,	dx
+
+	; 恢复到内核栈
+	mov		esp, kernel_stack_top
+
+	; 压入寄存器参数
+	push	eax
+	call	sys_call_handler
 
 	; 离开内核栈
 	mov		esp, [current_proc]

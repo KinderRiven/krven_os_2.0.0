@@ -4,14 +4,16 @@
 #include "string.h"
 #include "common.h"
 #include "console.h"
+#include "syscall.h"
+
 #define TTY_NUMBER 3
 
 //终端窗口
 tty_t tty[TTY_NUMBER];
 
 uint8_t current_tty = 0;
-
 static void tty_print_header(uint8_t num);
+
 
 //打印tty header
 static void tty_print_header(uint8_t num)
@@ -24,13 +26,16 @@ void parse_command(uint8_t num)
 {
 
 	//command solver
-
+	
 	//缓冲区初始化
 	printf("\n");
 	tty[num].buf_size = 0;
 	tty[num].point = 0;
 	tty[num].len = 0;
 
+	//系统调用
+	get_proc_num();
+	
 	//打印tty header
 	tty_print_header(num);
 }
@@ -96,8 +101,9 @@ void tty_print(uint8_t num)
 //tty进程
 void tty_start()
 {
+	
 	init_tty();
-
+	
 	while(1)
 	{
 		tty_print(current_tty);		

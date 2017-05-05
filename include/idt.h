@@ -114,4 +114,9 @@ void irq12(); 		// 接 PS/2 鼠标，也可设定给其他硬件
 void irq13(); 		// 协处理器使用
 void irq14(); 		// IDE0 传输控制使用
 void irq15(); 		// IDE1 传输控制使用
+
+void sys_call();	// (irq16) 系统调用
+
+void sys_call_handler(uint32_t sys_call_id);
+
 #endif
