@@ -10,6 +10,7 @@
 #include "idt.h"
 #include "keyboard.h"
 #include "tty.h"
+#include "sys.h"
 #include "proc.h"
 #include "tss.h"
 #include "kernel.h"
@@ -97,6 +98,9 @@ void kern_init()
 
 	//初始化TSS进程表
 	init_tss();
+
+	//初始化系统调用
+	init_sys_call();	
 
 	//清屏
 	console_clear();

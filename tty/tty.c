@@ -4,7 +4,7 @@
 #include "string.h"
 #include "common.h"
 #include "console.h"
-#include "syscall.h"
+#include "sys.h"
 
 #define TTY_NUMBER 3
 
@@ -33,9 +33,6 @@ void parse_command(uint8_t num)
 	tty[num].point = 0;
 	tty[num].len = 0;
 
-	//系统调用
-	get_proc_num();
-	
 	//打印tty header
 	tty_print_header(num);
 }

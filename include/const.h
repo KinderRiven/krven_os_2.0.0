@@ -12,8 +12,11 @@
 #define KERNEL_VIDEO_INDEX	0x18	// 屏幕映射段
 
 //系统描述符
-#define TYPE_LDT 	0x82		// 局部描述符
-#define TYPE_386TSS	0x89		// 386任务门描述符
+#define TYPE_LDT 		0x82		// LDT 局部描述符
+#define TYPE_386TSS		0x89		// 386 任务门描述符
+#define TYPE_386CGate	0x8C		// 386 调用门描述符
+#define TYPE_386IGate	0x8E		// 386 中断门描述符
+#define TYPE_386TGate	0x8F		// 386 陷阱门描述符
 
 //普通段描述符
 #define TYPE_RW		0x92		//读写

@@ -1,7 +1,7 @@
 #ifndef INCLUDE_SYSCALL_H_
 #define INCLUDE_SYSCALL_H_
 
-#include "sys_call_proc.h"
+#include "sys_proc.h"
 
 #define SYSCALL_MAX_SIZE 128
 #define SYS_CALL_PRINT	0	//测试系统调用 
