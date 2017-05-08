@@ -28,7 +28,7 @@ struct tty_t{
 
 extern uint8_t current_tty;
 
-void parse_command(uint8_t num);
+void tty_flush(uint8_t num);
 void init_tty();
 void tty_putc(int num, char c);
 void tty_write(int num, char* cstr);

@@ -14,7 +14,9 @@
 #include "proc.h"
 #include "tss.h"
 #include "kernel.h"
+#include "debug.h"
 #include "sched.h"
+#include "task.h"
 
 void kern_init();
 multiboot_t *glb_mboot_ptr;
@@ -28,22 +30,23 @@ __attribute__((section(".init.data"))) pgd_t *pte_high = (pgd_t *) 0x3000;
 __attribute__((section(".init.text")))
 void kern_entry(){
 
-	pgd_tmp[0] = (pgd_t) pte_low | PAGE_PRESENT | PAGE_WRITE;
-	pgd_tmp[PGD_INDEX(PAGE_OFFSET)] = (pgd_t) pte_high | PAGE_PRESENT | PAGE_WRITE;
+	pgd_tmp[0] = (pgd_t) pte_low | PDE_PRESENT | PDE_WRITE;
+	pgd_tmp[PGD_INDEX(PAGE_OFFSET)] = (pgd_t) pte_high | PDE_PRESENT | PDE_WRITE;
 	
 	int i = 0;
 	
 	for( i = 0; i < 1024; i++){
-		pte_low[i] = (i << 12) | PAGE_PRESENT | PAGE_WRITE;
+		pte_low[i] = (i << 12) | PTE_PRESENT | PTE_WRITE;
 	}
 
 	for( i = 0; i < 1024; i++){
-		pte_high[i] = (i << 12) | PAGE_PRESENT | PAGE_WRITE;
+		pte_high[i] = (i << 12) | PTE_PRESENT | PTE_WRITE;
 	}
 
 	//开启临时分页	
 	asm volatile("mov %0, %%cr3" : : "r" (pgd_tmp));
-	
+
+	//打开分页操作	
 	uint32_t cr0;
 	asm volatile("mov %%cr0, %0" : "=r" (cr0));
 	cr0 |= 0x80000000;
@@ -57,6 +60,8 @@ void kern_entry(){
 	glb_mboot_ptr = mboot_ptr_tmp + PAGE_OFFSET;
 	kern_init();
 }
+
+
 
 void kern_init()
 {
@@ -91,7 +96,7 @@ void kern_init()
 	printc(c_black, c_red, "Interrupt is enable!\n");	
 
 	//初始化时钟中断
-	init_timer(0);
+	init_timer(200);
 
 	//初始化键盘中断
 	init_keyboard();
@@ -105,14 +110,24 @@ void kern_init()
 	//清屏
 	console_clear();
 	
-	//新建tty窗口程序
-	new_proc(tty_start);
+	//初始化任务列表
+	init_task_table();
 	
-	//新建keyboard程序
-	new_proc(keyboard_buffer_start);
+	//新建程序
+	//new_task_proc((uint32_t) tty_start);
+	//new_task_proc((uint32_t) user_task_a);
+	//new_task_proc((uint32_t) sys_task_a);
+	//new_task_proc((uint32_t) keyboard_buffer_start);	
 
+	//新建任务
+	add_new_task(SYS_TASK,  (uint32_t) tty_start);
+	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start);	
+	//add_new_task(USER_TASK, (uint32_t) sys_task_a);
+	//add_new_task(USER_TASK, (uint32_t) user_task_a);	
+
+	//初始化进程
+	task_schedule();
 	init_schedule();
-	printf("Hello World!");	
 	
 	while(1){
 		asm volatile("hlt");

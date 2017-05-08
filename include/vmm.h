@@ -8,13 +8,28 @@
 
 #define PAGE_OFFSET 0xC0000000	//内存偏移量
 
+#define PAGE_MASK	0xFFFFF000	//页表项掩码 
 
-#define PAGE_PRESENT 	0x1		//存在位
-#define PAGE_WRITE		0x2		//读写位
-#define PAGE_USER 		0x4		//用户位
+#define PDE_PRESENT 	(1 << 0)	//存在位
+#define PDE_WRITE		(1 << 1)	//读写位
+#define PDE_USER 		(1 << 2)	//用户位
+#define PDE_PWT			(1 << 3)	//Write-through
+#define PDE_PCD			(1 << 4)	//Cache disabled
+#define PDE_Access		(1 << 5)	//Accessed
+#define PDE_Zero		(1 << 6)	//Reserved
+#define PDE_PS			(1 << 7)	//Page size
+#define PDE_G			(1 << 8)	//Global page
 
+#define PTE_PRESENT 	(1 << 0)	//存在位
+#define PTE_WRITE		(1 << 1)	//读写位
+#define PTE_USER 		(1 << 2)	//用户位
+#define PTE_PWT			(1 << 3)	//Write-through
+#define PTE_PCD			(1 << 4)	//Cache disabled
+#define PTE_Access		(1 << 5)	//Accessed
+#define PTE_Dir			(1 << 6)	//Dirty
+#define PTE_PAT			(1 << 7)	//always 0
+#define PTE_G			(1 << 8)	//Global page
 
-#define PAGE_MASK 0xFFFFF000
 
 #define PGD_INDEX(x) (((x) >> 22) & 0x3FF)
 

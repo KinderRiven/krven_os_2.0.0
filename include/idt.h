@@ -117,6 +117,4 @@ void irq15(); 		// IDE1 传输控制使用
 
 void sys_call();	// (irq16) 系统调用
 
-void sys_call_handler(uint32_t sys_call_id);
-
 #endif

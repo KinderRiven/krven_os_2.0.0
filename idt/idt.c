@@ -16,7 +16,14 @@ extern void idt_flush(uint32_t);
 
 void isr_handler(proc_regs_t *regs){
 
-	printc(c_black, c_light_red, "There is a erro handler : %d\n", regs -> int_no);
+	
+	printc(c_black, c_red, "\ngs: 0x%x ,fs: 0x%x ,es: 0x%x ,ds: 0x%x\n", regs -> gs, regs -> fs, regs -> es, regs -> ds);	
+	printc(c_black, c_red, "int_no: %d , err_code: %d\n", regs -> int_no, regs -> err_code);
+	
+	printc(c_black, c_red, "eip: 0x%x ,cs: 0x%x ,eflags: 0x%x ,esp: 0x%x ,ss: 0x%x\n", 
+			regs -> eip, regs -> cs, regs -> eflags, regs -> esp, regs -> ss);
+	//printf(c_black, c_red, "retaddr : %d\n", regs -> retaddr);
+	
 	while(1);
 }
 
@@ -32,13 +39,6 @@ void irq_handler(proc_regs_t *regs){
 	if(interrupt_handlers[regs -> int_no]){
 		interrupt_handlers[regs -> int_no](regs);
 	}
-}
-
-void sys_call_handler(uint32_t sys_call_id){
-
-	//直接调用系统调用表的函数	
-	sys_call_table[sys_call_id]();
-
 }
 
 void init_idt(){

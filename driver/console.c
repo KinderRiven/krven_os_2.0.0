@@ -6,6 +6,9 @@ static uint16_t *video_memory = (uint16_t *)(0xB8000 + PAGE_OFFSET);
 static uint8_t cursor_x = 0;
 static uint8_t cursor_y = 0;
 
+static c_color_t default_bg_color   = c_black;	//默认背景颜色
+static c_color_t default_font_color = c_white;	//默认字体颜色
+
 uint8_t console_cursor_x = 0;
 uint8_t console_cursor_y = 0;
 
@@ -28,7 +31,6 @@ void console_clear(){
 	int i;
 	
 	for(i = 0; i < 80 * 25; i++){
-
 		video_memory[i] = blank;
 	}
 	
@@ -56,7 +58,7 @@ static void scroll(){
 }
 
 void console_putc(char c){
-	console_putc_color(c, c_black, c_white);
+	console_putc_color(c, default_bg_color, default_font_color);
 }
 
 void console_putc_color(char c, c_color_t bg, c_color_t font)
@@ -90,6 +92,8 @@ void console_putc_color(char c, c_color_t bg, c_color_t font)
 	move_cursor();
 }
 
+
+//加入系统调用
 void console_write(char *cstr)
 {
 	while (*cstr) {
@@ -97,6 +101,7 @@ void console_write(char *cstr)
 	}
 }
 
+//加入系统调用
 void console_write_color(char *cstr, c_color_t bg, c_color_t font)
 {
 	while (*cstr) {

@@ -90,7 +90,7 @@ void alloc_chunk(uint32_t start, uint32_t len)
 	// 必须循环申请内存页直到有到足够的可用内存
 	while (start + len > heap_max) {
 		uint32_t page = pmm_alloc_page();
-		map(pgd_kern, heap_max, page, PAGE_PRESENT | PAGE_WRITE);
+		map(pgd_kern, heap_max, page, PTE_PRESENT | PTE_WRITE | PTE_USER);
 		heap_max += PAGE_SIZE;
 	}
 }

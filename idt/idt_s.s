@@ -5,37 +5,8 @@
 [EXTERN current_proc]
 [EXTERN tss]
 
-;--------------------------------------------
-REGS_GS 	EQU 	0			  	;0
-REGS_FS		EQU		REGS_GS  + 4	;4
-REGS_ES		EQU 	REGS_FS  + 4	;8
-REGS_DS		EQU		REGS_ES  + 4	;12
-
-;popad
-REGS_EDI	EQU		REGS_DS  + 4	;16
-REGS_ESI	EQU		REGS_EDI + 4	;20
-REGS_EBP	EQU		REGS_ESI + 4	;24
-KERNEL_ESP	EQU		REGS_EBP + 4	;28
-REGS_EBX	EQU		KERNEL_ESP + 4	;32
-REGS_EDX	EQU		REGS_EBX + 4	;36
-REGS_ECX	EQU		REGS_EDX + 4	;40
-REGS_EAX	EQU		REGS_ECX + 4	;44
-
-REGS_ADDR	EQU		REGS_EAX + 4	;48
-
-INT_NO		EQU		REGS_ADDR+ 4	;52
-ERR_CODE	EQU		INT_NO	 + 4	;56
-
-REGS_EIP	EQU		ERR_CODE + 4	;60
-REGS_CS		EQU		REGS_EIP + 4	;64
-REGS_FLAG	EQU		REGS_CS	 + 4	;68
-REGS_ESP	EQU		REGS_FLAG+ 4	;72
-REGS_SS		EQU		REGS_ESP + 4	;76
-REGS_TOP	EQU		REGS_SS	 + 4	;84
-PROC_LDTR	EQU		REGS_SS  + 4	;84
-;----------------------------------------------	
-TSS3_S_SP0	EQU		4
-;----------------------------------------------
+%include "proc.inc"
+%include "sys.inc"
 
 ;刷行idtr寄存器
 [GLOBAL idt_flush]
@@ -141,7 +112,6 @@ isr_common_stub:
 	; 否则压入 :  (error code) eflags cs eip
 	
 	; 从这里开始进行现场的保护	
-	sub		esp, 4
 	pushad
 	push	ds
 	push	es
@@ -152,11 +122,6 @@ isr_common_stub:
 	mov		dx, ss
 	mov		ds, dx
 	mov		es,	dx
-
-	; debug函数
-	;inc	byte [gs:0]
-	;mov	al, 0x20
-	;out	0x20, al
 
 	; 恢复到内核栈
 	mov		eax, esp
@@ -178,7 +143,7 @@ isr_common_stub:
 	pop		es
 	pop		ds
 	popad
-	add		esp, 12
+	add		esp, 8
 	iretd
 
 [GLOBAL irq_common_stub]
@@ -191,7 +156,6 @@ irq_common_stub:
 	; 否则压入 :  (error code) eflags cs eip
 	
 	; 从这里开始进行现场的保护	
-	sub		esp, 4
 	pushad
 	push	ds
 	push	es
@@ -228,11 +192,11 @@ irq_common_stub:
 	pop		es
 	pop		ds
 	popad
-	add		esp, 12
+	add		esp, 8
 	iretd
 
 [GLOBAL sys_call]
-[EXTERN sys_call_handler]
+[EXTERN sys_call_table]
 sys_call:
 
 	cli
@@ -245,7 +209,6 @@ sys_call:
 	; 否则压入 :  (error code) eflags cs eip
 	
 	; 从这里开始进行现场的保护	
-	sub		esp, 4
 	pushad
 	push	ds
 	push	es
@@ -259,10 +222,25 @@ sys_call:
 
 	; 恢复到内核栈
 	mov		esp, kernel_stack_top
-
+	
 	; 压入寄存器参数
-	push	eax
-	call	sys_call_handler
+	; 中断号
+	
+
+	; 根据中断号选择压入参数的个数	
+	cmp		eax,	SYS_DOUBLE
+	ja		.2
+	cmp		eax,	SYS_SINGLE
+	ja		.1
+	jmp		.0
+
+.2:
+	push	ecx
+.1:
+	push	ebx
+.0
+	; 直接跳入中断函数
+	call	[sys_call_table + eax * 4]
 
 	; 离开内核栈
 	mov		esp, [current_proc]
@@ -276,7 +254,7 @@ sys_call:
 	pop		es
 	pop		ds
 	popad
-	add		esp, 12
+	add		esp, 8
 	iretd
 
 .end:

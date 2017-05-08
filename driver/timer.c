@@ -5,9 +5,12 @@
 #include "sched.h"
 
 void clock_handler(){
-	
-	schedule();
 
+	//任务调度	
+	//task_schedule();
+	
+	//进程调度 
+	proc_schedule();
 }
 
 void init_timer(uint32_t frequency){

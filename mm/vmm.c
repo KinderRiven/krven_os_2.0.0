@@ -17,12 +17,12 @@ void init_vmm(){
 	//PTE_COUNT 128
 	for(i = kern_pte_first_idx, j = 0; i < PTE_COUNT + kern_pte_first_idx; i++, j++){
 		//pte的物理地址	
-		pgd_kern[i] = ((uint32_t)pte_kern[j] - PAGE_OFFSET) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER;
+		pgd_kern[i] = (((uint32_t)pte_kern[j] - PAGE_OFFSET) & PAGE_MASK) | PDE_PRESENT | PDE_WRITE | PDE_USER;
 	}
 	
 	uint32_t *pte = (uint32_t *) pte_kern;
 	for( i = 1; i < PTE_COUNT * PTE_SIZE; i++){
-		pte[i] = (i << 12) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER;
+		pte[i] = ((i << 12) & PAGE_MASK)| PTE_PRESENT | PTE_WRITE | PTE_USER;
 	}
 
 	//PGD的物理地址
@@ -48,7 +48,7 @@ void map(pgd_t *pgd_now, uint32_t va, uint32_t pa, uint32_t flags){
 		//申请一个页表
 		pte = (pte_t *) pmm_alloc_page();
 		//将目录项指向页表地址
-		pgd_now[pgd_idx] = (uint32_t) pte | PAGE_PRESENT | PAGE_WRITE;
+		pgd_now[pgd_idx] = (uint32_t) pte | PTE_PRESENT | PTE_WRITE;
 		//转化为线性地址
 		pte = (pte_t *) ((uint32_t)pte + PAGE_OFFSET);
 		bzero(pte, PAGE_SIZE);		

@@ -26,8 +26,6 @@ struct proc_regs_t{
 	uint32_t edx;
 	uint32_t ecx;
 	uint32_t eax;
-
-	uint32_t retaddr;
 	
 	//错误号、中断
 	uint32_t int_no;	
@@ -62,10 +60,14 @@ extern char proc_stack[PROC_MAX_NUM][PROC_STACK_SIZE];
 //正在运行的进程数量
 extern int proc_num;
 
-typedef void (*proc_fun)();
-pid_t new_proc(proc_fun fun);
+//新建一个权限级为1的进程
+pid_t new_task_proc(uint32_t fun);
+
+//新疆一个权限级为3的进程
+pid_t new_user_proc(uint32_t fun);
 
 void restart();
+
 void proc_start();
 
 #endif

@@ -2,6 +2,7 @@
 #include "string.h"
 #include "vargs.h"
 #include "stdio.h"
+#include "sys.h"
 
 static int vsprintf(char *buff, const char *format, va_list args);
 
@@ -17,8 +18,9 @@ void printk(const char *format, ...)
 	va_end(args);
 
 	buff[i] = '\0';
-
-	console_write(buff);
+	
+	//console_write(buff);
+	write(buff);
 }
 
 void printf(const char *format, ...)
@@ -34,8 +36,8 @@ void printf(const char *format, ...)
 
 	buff[i] = '\0';
 
-	console_write(buff);
-
+	//console_write(buff);
+	write(buff);
 }
 
 void printk_color(c_color_t back, c_color_t fore, const char *format, ...)
@@ -50,10 +52,12 @@ void printk_color(c_color_t back, c_color_t fore, const char *format, ...)
 	va_end(args);
 
 	buff[i] = '\0';
-
 	console_write_color(buff, back, fore);
+
 }
+
 void printc(c_color_t back, c_color_t fore, const char *format, ...){
+	
 	// 避免频繁创建临时变量，内核的栈很宝贵
 	static char buff[1024];
 	va_list args;
@@ -64,7 +68,6 @@ void printc(c_color_t back, c_color_t fore, const char *format, ...){
 	va_end(args);
 
 	buff[i] = '\0';
-
 	console_write_color(buff, back, fore);
 
 }

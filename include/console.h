@@ -35,6 +35,9 @@ void console_putc_color(char c, c_color_t bg, c_color_t font);
 //打印一个字符串
 void console_write(char *cstr);
 
+//修改默认字体颜色
+void alert_console_color(c_color_t bg, c_color_t font);
+
 //打印一个有颜色的字符串
 void console_write_color(char *cstr, c_color_t bg, c_color_t font);
 
