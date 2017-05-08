@@ -66,26 +66,27 @@ void kern_entry(){
 void kern_init()
 {
 	console_clear();
-	printc(c_black, c_light_red, "Welcome to K'OS!\n");	
+	
+	//printc(c_black, c_light_red, "Welcome to K'OS!\n");	
 	
 	//初始化全局描述符号
 	init_gdt();
-	printc(c_black, c_light_red, "Init gdt finished!\n");
+	//printc(c_black, c_light_red, "Init gdt finished!\n");
 
 	
 	//物理内存初始化
 	init_pmm();
-	printc(c_black, c_light_red, "Init pmm finished!\n");
-	show_pmm_status();	
-	show_memory_map();
+	//printc(c_black, c_light_red, "Init pmm finished!\n");
+	//show_pmm_status();	
+	//show_memory_map();
 
 	//虚拟内存初始化
 	init_vmm();
-	printc(c_black, c_light_brown, "Init vmm finished!\n");	
+	//printc(c_black, c_light_brown, "Init vmm finished!\n");	
 
 	//中断初始化
 	init_idt();
-	printc(c_black, c_light_brown, "Init idt finished!\n");
+	//printc(c_black, c_light_brown, "Init idt finished!\n");
 	
 	//内存堆初始化
 	init_heap();
@@ -93,10 +94,10 @@ void kern_init()
 	//while(1);
 	
 	//打开中断	
-	printc(c_black, c_red, "Interrupt is enable!\n");	
+	//printc(c_black, c_red, "Interrupt is enable!\n");	
 
 	//初始化时钟中断
-	init_timer(200);
+	init_timer(100);
 
 	//初始化键盘中断
 	init_keyboard();
@@ -113,6 +114,7 @@ void kern_init()
 	//初始化任务列表
 	init_task_table();
 	
+	
 	//新建程序
 	//new_task_proc((uint32_t) tty_start);
 	//new_task_proc((uint32_t) user_task_a);
@@ -122,8 +124,8 @@ void kern_init()
 	//新建任务
 	add_new_task(SYS_TASK,  (uint32_t) tty_start);
 	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start);	
-	//add_new_task(USER_TASK, (uint32_t) sys_task_a);
-	//add_new_task(USER_TASK, (uint32_t) user_task_a);	
+	add_new_task(SYS_TASK, (uint32_t) sys_task_a);
+	add_new_task(USER_TASK, (uint32_t) user_task_a);	
 
 	//初始化进程
 	task_schedule();

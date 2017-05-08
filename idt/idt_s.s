@@ -214,32 +214,33 @@ sys_call:
 	push	es
 	push	fs	
 	push	gs
-
-	; 恢复到内核态
-	mov		dx, ss
-	mov		ds, dx
-	mov		es,	dx
-
+	
 	; 恢复到内核栈
 	mov		esp, kernel_stack_top
-	
 	; 压入寄存器参数
 	; 中断号
 	
-
 	; 根据中断号选择压入参数的个数	
+	cmp		eax,	SYS_TREBLE
+	ja		.3
 	cmp		eax,	SYS_DOUBLE
 	ja		.2
 	cmp		eax,	SYS_SINGLE
 	ja		.1
+	
 	jmp		.0
-
+.3:
+	push	edx
 .2:
 	push	ecx
 .1:
 	push	ebx
 .0
 	; 直接跳入中断函数
+	; 恢复到内核态
+	mov		dx, ss
+	mov		ds, dx
+	mov		es,	dx
 	call	[sys_call_table + eax * 4]
 
 	; 离开内核栈

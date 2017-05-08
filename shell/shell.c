@@ -3,6 +3,7 @@
 #include "task.h"
 #include "stdio.h"
 #include "sys.h"
+#include "console.h"
 
 void shell_parse_command(char *args)
 {
@@ -17,11 +18,19 @@ void shell_parse_command(char *args)
 	}
 	else if(strcmp(args, "write") == 0)
 	{
-		write("Test Writing!");
+		write("Test Writing!\n");
+	}
+	else if(strcmp(args, "color") == 0)
+	{
+		write_color("Hello World!\n", c_black, c_red);
+	}
+	else if(strcmp(args, "clear") == 0)
+	{
+		write_clear();
 	}
 	else
 	{
-		printf("Can not find order : %s", args);
+		printc(c_black, c_light_red, "Can't find command : %s", args);
+		printf("\n");
 	}
-	printf("\n");
 }

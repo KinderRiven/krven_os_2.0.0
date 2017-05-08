@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "ldt.h"
+#include "msg.h"
 
 #define LDT_SIZE 2
 #define PROC_STACK_SIZE 1024
@@ -47,8 +48,13 @@ struct proc_t{
 	uint16_t ldtr;						//ldtr寄存器的值 (2字节)
 	ldt_descriptor_t ldts[LDT_SIZE];	//2个
 	pid_t pid;							//进程id号
+	char name[15];						//进程名称
 
+	msg_t msg;							//消息结构体
 
+	struct proc_t *msg_head;			//消息接收
+	struct proc_t *msg_next;			//链表指针	
+	
 }proc_t;
 
 //进程表

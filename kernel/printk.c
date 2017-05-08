@@ -6,6 +6,7 @@
 
 static int vsprintf(char *buff, const char *format, va_list args);
 
+//内核级
 void printk(const char *format, ...)
 {
 	// 避免频繁创建临时变量，内核的栈很宝贵
@@ -19,10 +20,11 @@ void printk(const char *format, ...)
 
 	buff[i] = '\0';
 	
-	//console_write(buff);
-	write(buff);
+	console_write(buff);
+	//write(buff);
 }
 
+//用户级
 void printf(const char *format, ...)
 {
 	// 避免频繁创建临时变量，内核的栈很宝贵
@@ -40,6 +42,7 @@ void printf(const char *format, ...)
 	write(buff);
 }
 
+//内核级
 void printk_color(c_color_t back, c_color_t fore, const char *format, ...)
 {
 	// 避免频繁创建临时变量，内核的栈很宝贵
@@ -53,9 +56,10 @@ void printk_color(c_color_t back, c_color_t fore, const char *format, ...)
 
 	buff[i] = '\0';
 	console_write_color(buff, back, fore);
-
+	//write_color(buff, back, fore);
 }
 
+//用户级
 void printc(c_color_t back, c_color_t fore, const char *format, ...){
 	
 	// 避免频繁创建临时变量，内核的栈很宝贵
@@ -68,8 +72,8 @@ void printc(c_color_t back, c_color_t fore, const char *format, ...){
 	va_end(args);
 
 	buff[i] = '\0';
-	console_write_color(buff, back, fore);
-
+	//console_write_color(buff, back, fore);
+	write_color(buff, back, fore);
 }
 #define is_digit(c)	((c) >= '0' && (c) <= '9')
 

@@ -8,7 +8,6 @@ void user_task_a()
 
 	while(1)
 	{
-		//printf("A");
 		//write("A");
 		//get_proc_num();
 		for(i = 0; i < 10000; i++)
@@ -22,7 +21,6 @@ void sys_task_a()
 
 	while(1)
 	{
-		write("B");
 		//printf("B");
 		for(i = 0; i < 10000; i++)
 			for(j = 0; j < 1000; j++);

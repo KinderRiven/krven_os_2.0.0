@@ -6,12 +6,16 @@ static void set_sys_call(int num, uint32_t sys_call);
 
 void init_sys_call()
 {
-	//查看内存中进程数量的系统调用
+	//1.查看内存中进程数量的系统调用
 	set_sys_call(SYS_PROC_NUM, (uint32_t) sys_get_proc_num);
+	//2.清屏
+	set_sys_call(SYS_WRITE_CLEAR, (uint32_t) sys_write_clear);
 	
-	//查看
+	//51.内核打印函数
 	set_sys_call(SYS_WRITE, (uint32_t) sys_write);
 
+	//151.内核打印函数
+	set_sys_call(SYS_WRITE_COLOR, (uint32_t) sys_write_color);
 }
 
 static void set_sys_call(int num, uint32_t sys_call)
