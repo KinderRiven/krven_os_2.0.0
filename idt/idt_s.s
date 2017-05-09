@@ -215,7 +215,7 @@ sys_call:
 	push	fs	
 	push	gs
 	
-	; 恢复到内核栈
+	; 恢复到内核栈, 进行参数转移
 	mov		esp, kernel_stack_top
 	; 压入寄存器参数
 	; 中断号
@@ -227,15 +227,14 @@ sys_call:
 	ja		.2
 	cmp		eax,	SYS_SINGLE
 	ja		.1
-	
 	jmp		.0
 .3:
-	push	edx
+	push	dword [ebx + 12]
 .2:
-	push	ecx
+	push	dword [ebx + 8]
 .1:
-	push	ebx
-.0
+	push	dword [ebx + 4]
+.0:
 	; 直接跳入中断函数
 	; 恢复到内核态
 	mov		dx, ss

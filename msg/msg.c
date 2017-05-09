@@ -23,11 +23,14 @@ void msg_send(proc_t* proc_from, pid_t send_to, msg_t *msg)
 	if(proc_to -> msg_block && 
 		(proc_to -> recv_from == proc_from -> pid || proc_to -> recv_from == ANY))
 	{
-		printk("[msg_send]\n");
-		printk("[to] : %d\n", send_to);
-		printk("[int_no] : %d\n", msg -> int_no);
+		//printk("[msg_send]\n");
+		//printk("[to] : %d\n", send_to);
+		//printk("[int_no] : %d\n", msg -> int_no);
 
+		//proc_to -> msg -> int_no = 0x10;
 		memcpy(proc_to -> msg, msg, sizeof(msg_t)); 
+		//printk("Copy finished : %x %x %d\n", proc_to -> msg, msg, proc_to -> msg -> int_no);
+		
 		//解除阻塞
 		proc_to -> msg_block = 0;					
 	}
@@ -75,6 +78,7 @@ void msg_receive(proc_t *proc_to, pid_t recv_from, msg_t *msg)
 		}
 	}		
 	//如果没有消息可以接收,那么对自己产生一个阻塞
+	printk("I am block!\n");
 	proc_to -> msg_block = 1;
 	proc_to -> recv_from = recv_from;
 	proc_to -> msg = msg;
