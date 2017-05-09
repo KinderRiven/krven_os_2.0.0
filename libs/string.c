@@ -2,9 +2,6 @@
 
 inline void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len){
 
-	if(len <= 0)
-		return;
-	
 	for(; len != 0; len --){
 		*dest++ = *src++;
 	}
@@ -12,9 +9,6 @@ inline void memcpy(uint8_t *dest, const uint8_t *src, uint32_t len){
 
 void memset(void *dest,	uint8_t val, uint32_t len){
 
-	if(len <= 0)
-		return;
-	
 	uint8_t *dst = (uint8_t *)dest;
 
 	for(; len != 0; len--){

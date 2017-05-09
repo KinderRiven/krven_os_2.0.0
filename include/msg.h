@@ -8,7 +8,7 @@
 typedef
 struct msg_t{
 	
-	char message[MESSAGE_SIZE];	
+	uint8_t message[MESSAGE_SIZE];	
 	int	int_no;
 	
 }msg_t;

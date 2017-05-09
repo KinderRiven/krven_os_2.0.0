@@ -139,6 +139,9 @@ void kern_init()
 	
 	//#5 系统进程Reveice
 	add_new_task(SYS_TASK, (uint32_t) debug_recv_task);
+
+	//#6 系统调用
+	add_new_task(SYS_TASK, (uint32_t) debug_sys_call);	
 	
 	//初始化进程
 	task_schedule();

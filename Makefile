@@ -78,3 +78,7 @@ update_loader:
 .PHONY : show_mm
 show_mm:
 	objdump -h $(Kernel_Name)
+
+.PHONY : wc
+wc:
+	wc -l * */* */*/*

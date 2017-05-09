@@ -16,21 +16,60 @@ void sleep(uint32_t time)
 
 void debug_user_task()
 {
-	while(1){}
+	uint8_t byte = 'A';
+	while(1){
+		debug_print_right(byte);	
+		sleep(100);
+	}
 }
 
 void debug_sys_task()
 {
 
-	while(1){}
+	uint16_t byte = 'B';
+	while(1){
+		debug_print_right(byte);
+		sleep(100);
+	}
+}
+
+void debug_sys_call()
+{
+	
+	while(1){
+		printf("S");
+		sleep(100);
+	}
 }
 
 void debug_send_task()
 {
-	while(1){};
+	char byte = 'C';
+	
+	msg_t msg;
+	char message[50] = "Hello World!";
+	msg.int_no = 0x10;
+	memcpy(msg.message, message, sizeof(message));
+		
+	
+	sleep(10);
+	send_message(4, 5, &msg);
+	
+	while(1){
+		debug_print_left(byte);
+		sleep(100);
+	};
 }
 
 void debug_recv_task()
 {
-	while(1){};
+	char byte = 'D';
+	
+	msg_t msg;
+	recv_message(4, 5, &msg);
+	
+	while(1){
+		debug_print_left(byte);
+		sleep(100);
+	};
 }

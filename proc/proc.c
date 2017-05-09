@@ -38,7 +38,7 @@ pid_t new_task_proc(uint32_t fun)
 	procs[proc_num].regs.gs = KERNEL_VIDEO_INDEX   | RPL_1;
 
 	procs[proc_num].regs.eip = (uint32_t) fun;	
-	procs[proc_num].regs.esp = (uint32_t) proc_stack[proc_num] + PROC_STACK_SIZE - 10;	
+	procs[proc_num].regs.esp = (uint32_t) proc_stack[proc_num] + PROC_STACK_SIZE - 1;	
 	procs[proc_num].regs.eflags = 0x1202;
 
 	//debug_proc(&procs[proc_num]);
@@ -73,7 +73,7 @@ pid_t new_user_proc(uint32_t fun)
 	procs[proc_num].regs.gs = KERNEL_VIDEO_INDEX   | RPL_3;
 
 	procs[proc_num].regs.eip = (uint32_t) fun;	
-	procs[proc_num].regs.esp = (uint32_t) proc_stack[proc_num] + PROC_STACK_SIZE - 10;	
+	procs[proc_num].regs.esp = (uint32_t) proc_stack[proc_num] + PROC_STACK_SIZE - 1;	
 	
 	//用户进程关闭IO权限
 	procs[proc_num].regs.eflags = 0x202;
