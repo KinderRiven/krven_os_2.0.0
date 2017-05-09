@@ -10,6 +10,7 @@ struct msg_t{
 	
 	uint8_t message[MESSAGE_SIZE];	
 	int	int_no;
+	uint8_t outb;
 	
 }msg_t;
 

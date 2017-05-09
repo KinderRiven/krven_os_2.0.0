@@ -26,9 +26,11 @@ void proc_schedule()
 	
 		//不调度发生阻塞的程序
 		if(current_proc -> msg_block != 1){
+			task_table[current_proc -> tid].status = 1;
 			break;
 		}
 		else{
+			task_table[current_proc -> tid].status = 2;
 			//printk("[%d]", current_proc -> pid);
 		}
 	}
@@ -48,11 +50,14 @@ void task_schedule()
 			//创建system进程
 			if(task_table[i].level == SYS_TASK)
 			{
+				//为proc和task建立双向映射
 				task_table[i].pid = new_task_proc((uint32_t) task_table[i].entry);
+				procs[task_table[i].pid].tid = task_table[i].tid;
 			}
 			else if(task_table[i].level == USER_TASK)
 			{
 				task_table[i].pid = new_user_proc((uint32_t) task_table[i].entry);
+				procs[task_table[i].pid].tid = task_table[i].tid;
 			}
 		}
 	}	

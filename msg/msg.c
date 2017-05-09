@@ -11,6 +11,7 @@ static void msg_copy(msg_t *msg_a, msg_t *msg_b);
 static void msg_copy(msg_t *msg_to, msg_t *msg_from)
 {
 	msg_to -> int_no = msg_from -> int_no;
+	msg_to -> outb = msg_from -> outb;
 	
 	int i;
 	for(i = 0; i < MESSAGE_SIZE; i++)
@@ -65,9 +66,10 @@ void msg_receive(proc_t *proc_to, pid_t recv_from, msg_t *msg)
 			//找到可以接收的消息
 			if(recv_from == ANY || recv_from == tmp1 -> pid)
 			{
-				//消息传递
+				//消息传递, 解除阻塞
 				msg_copy(msg, tmp1 -> msg);
-				
+				tmp1 -> msg_block = 0;				
+
 				//修改链表
 				if(tmp1 == proc_to -> msg_head)
 				{

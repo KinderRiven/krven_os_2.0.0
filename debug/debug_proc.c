@@ -47,17 +47,15 @@ void debug_send_task()
 	char byte = 'C';
 	
 	msg_t msg;
-	char message[50] = "Hello World!";
-	msg.int_no = 0x10;
-	memcpy(msg.message, message, sizeof(message));
-		
+	msg.outb = 'A';
 	
-	sleep(10);
-	send_message(4, 5, &msg);
+	sleep(100);
 	
 	while(1){
-		debug_print_left(byte);
+		send_message(4, 5, &msg);
+		debug_print_right(byte);
 		sleep(100);
+		msg.outb++;
 	};
 }
 
@@ -69,7 +67,9 @@ void debug_recv_task()
 	recv_message(4, 5, &msg);
 	
 	while(1){
-		debug_print_left(byte);
+		recv_message(4, 5, &msg);
+		debug_print_left(msg.outb);
+		debug_print_right(byte);
 		sleep(100);
 	};
 }
