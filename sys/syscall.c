@@ -16,6 +16,10 @@ void init_sys_call()
 
 	//151.内核打印函数
 	set_sys_call(SYS_WRITE_COLOR, (uint32_t) sys_write_color);
+	//152
+	set_sys_call(SYS_SEND_MESSAGE, (uint32_t) sys_send_message);
+	//153
+	set_sys_call(SYS_RECV_MESSAGE, (uint32_t) sys_recv_message);
 }
 
 static void set_sys_call(int num, uint32_t sys_call)

@@ -5,15 +5,25 @@
 
 [GLOBAL get_proc_num]
 get_proc_num:
-
 	mov		eax, SYS_PROC_NUM	;系统调用号
 	int	 	SYS_INT_NO
 	ret	
 
 [GLOBAL recv_message]
-	
+recv_message:	
 	mov		eax, SYS_RECV_MESSAGE
 	mov		ebx, [esp + 4]
 	mov		ecx, [esp + 8]
+	mov		edx, [esp + 12]
 	int		SYS_INT_NO
-	ret	
+	ret
+
+[GLOBAL send_message]
+send_message:
+	mov		eax, SYS_SEND_MESSAGE
+	mov		ebx, [esp + 4]
+	mov		ecx, [esp + 8]
+	mov		edx, [esp + 12]
+	int		SYS_INT_NO
+	ret
+	

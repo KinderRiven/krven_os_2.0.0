@@ -18,11 +18,11 @@
 
 //双参调用
 #define SYS_ALERT_WRITE_COLOR 101
-#define SYS_SEND_MESSAGE 102
-#define SYS_RECV_MESSAGE 103
 
 //三参数调用
-#define SYS_WRITE_COLOR	151
+#define SYS_WRITE_COLOR	 151
+#define SYS_SEND_MESSAGE 152
+#define SYS_RECV_MESSAGE 153
 
 extern uint32_t sys_call_table[SYSCALL_MAX_SIZE];
 

@@ -19,8 +19,19 @@ void init_schedule()
 void proc_schedule()
 {
 	//printf("\nSchedule : %d/%d\n", num, proc_num);
-	current_proc = &(procs[num % proc_num]);
-	num = (num + 1) % proc_num;
+	while(1){
+		
+		current_proc = &(procs[num % proc_num]);
+		num = (num + 1) % proc_num;
+		
+		//不调度发生阻塞的程序
+		if(current_proc -> msg_block != 1){
+			break;
+		}
+		else{
+			//printk("[%d]", current_proc -> pid);
+		}
+	}
 }
 
 //任务唤醒

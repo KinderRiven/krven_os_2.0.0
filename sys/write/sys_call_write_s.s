@@ -16,7 +16,6 @@ write:
 [GLOBAL write_clear]
 write_clear
 
-	;
 	mov		eax, SYS_WRITE_CLEAR
 	int		SYS_INT_NO
 	ret

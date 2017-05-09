@@ -9,6 +9,9 @@
 #define PROC_STACK_SIZE 1024
 #define PROC_MAX_NUM 10
 
+#define ANY -1
+#define PROC_DEBUG 0
+
 typedef
 struct proc_regs_t{
 
@@ -47,11 +50,17 @@ struct proc_t{
 	proc_regs_t regs;					//寄存器保存的值 (18 * 4 = 72字节)
 	uint16_t ldtr;						//ldtr寄存器的值 (2字节)
 	ldt_descriptor_t ldts[LDT_SIZE];	//2个
+	
 	pid_t pid;							//进程id号
+	tid_t tid;							//对应的任务号
 	char name[15];						//进程名称
 
-	msg_t msg;							//消息结构体
+										//以下是进程的消息处理内容
+	msg_t *msg;							//消息结构体
 
+	pid_t send_to;						//想发送消息去哪里
+	pid_t recv_from;					//想从哪里接收到消息
+	int	msg_block;						//是否有消息阻塞	
 	struct proc_t *msg_head;			//消息接收
 	struct proc_t *msg_next;			//链表指针	
 	
@@ -72,8 +81,11 @@ pid_t new_task_proc(uint32_t fun);
 //新疆一个权限级为3的进程
 pid_t new_user_proc(uint32_t fun);
 
-void restart();
+//进程通信函数
 
-void proc_start();
+//消息发送
+void msg_send(proc_t *proc_from, pid_t send_to, msg_t *msg);
+//消息接收
+void msg_receive(proc_t *proc_to, pid_t recv_from, msg_t *msg);
 
 #endif

@@ -122,10 +122,14 @@ void kern_init()
 	//new_task_proc((uint32_t) keyboard_buffer_start);	
 
 	//新建任务
+	//#0
 	add_new_task(SYS_TASK,  (uint32_t) tty_start);
+	//#1
 	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start);	
+	//#2
 	add_new_task(SYS_TASK, (uint32_t) sys_task_a);
-	add_new_task(USER_TASK, (uint32_t) user_task_a);	
+	//#3
+	add_new_task(SYS_TASK, (uint32_t) user_task_a);	
 
 	//初始化进程
 	task_schedule();

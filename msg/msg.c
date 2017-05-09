@@ -2,39 +2,51 @@
 #include "proc.h"
 #include "types.h"
 #include "string.h"
+#include "stdio.h"
 
 static void insert_msg_queue(proc_t *proc_from, proc_t *proc_to);
+static void msg_debug(proc_t *proc);
+
+static void msg_debug(proc_t *proc)
+{
+
+	printk("I am ready to send/receive msg!\n");
+	printk("status : %d\n", proc -> msg_block);
+}
 
 //发送消息的函数
-void msg_send(uint32_t pid_from, uint32_t pid_to)
+void msg_send(proc_t* proc_from, pid_t send_to, msg_t *msg)
 {
-	proc_t *proc_from = &procs[pid_from];
-	proc_t *proc_to = &procs[pid_to];
+	proc_t *proc_to = &procs[send_to];
 
 	//如果正在等待接收消息
-	if(proc_to -> msg.msg_block && 
-		(proc_to -> msg.recv_from == pid_from || proc_to -> msg.recv_from == ANY))
+	if(proc_to -> msg_block && 
+		(proc_to -> recv_from == proc_from -> pid || proc_to -> recv_from == ANY))
 	{
-		memcpy(proc_to -> msg.recv_msg, proc_from -> msg.send_msg, MESSAGE_SIZE); 
+		printk("[msg_send]\n");
+		printk("[to] : %d\n", send_to);
+		printk("[int_no] : %d\n", msg -> int_no);
+
+		memcpy(proc_to -> msg, msg, sizeof(msg_t)); 
 		//解除阻塞
-		proc_to -> msg.msg_block = 0;					
+		proc_to -> msg_block = 0;					
 	}
 	//否则加入消息队列，并对自己产生一个阻塞
 	else
 	{
-		//阻塞自己	
-		proc_from -> msg.msg_block = 1;	
-		proc_from -> msg.send_to = pid_to;
+		//阻塞自己,并保存消息	
+		proc_from -> msg_block = 1;	
+		proc_from -> send_to = send_to;
+		proc_from -> msg = msg;
+		
 		//插入到消息队列
 		insert_msg_queue(proc_from, proc_to);				
 	}	
 }
 
 //接收消息的函数
-void msg_reveice(uint32_t pid_from, uint32_t pid_to)
+void msg_receive(proc_t *proc_to, pid_t recv_from, msg_t *msg)
 {
-	proc_t *proc_to = &procs[pid_to];
-
 	//先检查消息队列查看是否有像接收的消息
 	if(proc_to -> msg_head != NULL)
 	{
@@ -43,10 +55,10 @@ void msg_reveice(uint32_t pid_from, uint32_t pid_to)
 		while(tmp1 != NULL)
 		{
 			//找到可以接收的消息
-			if(pid_from == ANY || pid_from == tmp1 -> pid)
+			if(recv_from == ANY || recv_from == tmp1 -> pid)
 			{
 				//消息传递
-				memcpy(proc_to -> msg.recv_msg, tmp1 -> msg.send_msg, MESSAGE_SIZE);
+				memcpy(msg, tmp1 -> msg, sizeof(msg_t));
 				//修改链表
 				if(tmp1 == proc_to -> msg_head)
 				{
@@ -56,14 +68,16 @@ void msg_reveice(uint32_t pid_from, uint32_t pid_to)
 				{
 					tmp2 -> msg_next = tmp1 -> msg_next;
 				}
+				return;
 			}
 			tmp2 = tmp1;
 			tmp1 = tmp1 -> msg_next;
 		}
 	}		
 	//如果没有消息可以接收,那么对自己产生一个阻塞
-	proc_to -> msg.msg_block = 1;
-	proc_to -> msg.recv_from = pid_from;
+	proc_to -> msg_block = 1;
+	proc_to -> recv_from = recv_from;
+	proc_to -> msg = msg;
 }
 
 static void insert_msg_queue(proc_t *proc_from, proc_t *proc_to)
