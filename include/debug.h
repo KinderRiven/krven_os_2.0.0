@@ -1,7 +1,10 @@
 #ifndef INCLUDE_DEBUG_H_
 #define INCLUDE_DEBUG_H_
 
-void user_task_a();
-void sys_task_a();
+void debug_user_task();
+void debug_sys_task();
+
+void debug_send_task();
+void debug_recv_task();
 
 #endif

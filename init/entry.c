@@ -122,15 +122,24 @@ void kern_init()
 	//new_task_proc((uint32_t) keyboard_buffer_start);	
 
 	//新建任务
-	//#0
+	//#0 tty进程
 	add_new_task(SYS_TASK,  (uint32_t) tty_start);
-	//#1
+	
+	//#1 键盘读取任务
 	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start);	
-	//#2
-	add_new_task(SYS_TASK, (uint32_t) sys_task_a);
-	//#3
-	add_new_task(SYS_TASK, (uint32_t) user_task_a);	
-
+	
+	//#2 用户进程A
+	add_new_task(USER_TASK, (uint32_t) debug_sys_task);
+	
+	//#3 用户进程B
+	add_new_task(USER_TASK, (uint32_t) debug_user_task);	
+	
+	//#4 系统进程Send
+	add_new_task(SYS_TASK, (uint32_t) debug_send_task);	
+	
+	//#5 系统进程Reveice
+	add_new_task(SYS_TASK, (uint32_t) debug_recv_task);
+	
 	//初始化进程
 	task_schedule();
 	init_schedule();

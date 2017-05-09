@@ -214,12 +214,21 @@ sys_call:
 	push	es
 	push	fs	
 	push	gs
-	
+
 	; 恢复到内核栈, 进行参数转移
+	
+	; 找到调用号
+	; 找到之前的栈指针
+	mov		ecx, [esp + REGS_ESP]
+	; 找到中断号
+	mov		eax, [ecx]
+	; 找到压栈参数地址
+	mov		ebx, [ecx + 4]
+	; 切换到内核栈
 	mov		esp, kernel_stack_top
+
 	; 压入寄存器参数
 	; 中断号
-	
 	; 根据中断号选择压入参数的个数	
 	cmp		eax,	SYS_TREBLE
 	ja		.3
@@ -227,7 +236,8 @@ sys_call:
 	ja		.2
 	cmp		eax,	SYS_SINGLE
 	ja		.1
-	jmp		.0
+	cmp		eax, 	SYS_ZERO
+	ja		.0
 .3:
 	push	dword [ebx + 12]
 .2:
@@ -256,6 +266,5 @@ sys_call:
 	popad
 	add		esp, 8
 	iretd
-
 .end:
 

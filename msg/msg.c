@@ -6,6 +6,17 @@
 
 static void insert_msg_queue(proc_t *proc_from, proc_t *proc_to);
 static void msg_debug(proc_t *proc);
+static void msg_copy(msg_t *msg_a, msg_t *msg_b);
+
+static void msg_copy(msg_t *msg_to, msg_t *msg_from)
+{
+	msg_to -> int_no = msg_from -> int_no;
+	msg_to -> message[0] = 'A';
+	printk("%d\n", sizeof(msg_from -> message));
+	//memcpy((uint8_t *)msg_to -> message, (uint8_t *)msg_from -> message, sizeof(msg_from -> message));
+	//printk("0x%x 0x%x\n", msg_to, msg_from);
+}
+
 
 static void msg_debug(proc_t *proc)
 {
@@ -27,9 +38,7 @@ void msg_send(proc_t* proc_from, pid_t send_to, msg_t *msg)
 		//printk("[to] : %d\n", send_to);
 		//printk("[int_no] : %d\n", msg -> int_no);
 
-		//proc_to -> msg -> int_no = 0x10;
-		memcpy(proc_to -> msg, msg, sizeof(msg_t)); 
-		//printk("Copy finished : %x %x %d\n", proc_to -> msg, msg, proc_to -> msg -> int_no);
+		msg_copy(proc_to -> msg, msg);
 		
 		//解除阻塞
 		proc_to -> msg_block = 0;					

@@ -5,34 +5,38 @@
 
 ;屏幕打印系统调用
 [GLOBAL write]
-write:	
-	
-	mov		eax, SYS_WRITE
-	mov		ebx, esp
+write:
+
+	push	dword esp	
+	push	dword SYS_WRITE
 	int		SYS_INT_NO
+	add		esp, 8
 	ret
 
 [GLOBAL write_clear]
 write_clear:
 
-	mov		eax, SYS_WRITE_CLEAR
-	mov		ebx, esp
+	push	dword esp
+	push	dword SYS_WRITE_CLEAR
 	int		SYS_INT_NO
+	add		esp, 8
 	ret
 
 ;修改打印颜色系统调用
 [GLOBAL alert_write_color]
 alert_write_color:
-	
-	mov		eax, SYS_ALERT_WRITE_COLOR
-	mov		ebx, esp
+
+	push	dword esp	
+	push	dword SYS_ALERT_WRITE_COLOR
 	int		SYS_INT_NO
+	add		esp, 8
 	ret
 
 [GLOBAL write_color]
 write_color:
-	
-	mov		eax, SYS_WRITE_COLOR
-	mov		ebx, esp
+
+	push	dword esp	
+	push	dword SYS_WRITE_COLOR
 	int		SYS_INT_NO
+	add		esp, 8
 	ret
