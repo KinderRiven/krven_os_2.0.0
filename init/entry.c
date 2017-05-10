@@ -17,6 +17,7 @@
 #include "debug.h"
 #include "sched.h"
 #include "task.h"
+#include "hd.h"
 
 void kern_init();
 multiboot_t *glb_mboot_ptr;
@@ -134,15 +135,24 @@ void kern_init()
 	//#3 用户进程B
 	add_new_task(USER_TASK, (uint32_t) debug_user_task);	
 	
-	//#4 系统进程Send
+	//#4 系统进程send1
 	add_new_task(SYS_TASK, (uint32_t) debug_send_task);	
 	
-	//#5 系统进程Reveice
+	//#5 系统进程send2
+	add_new_task(SYS_TASK, (uint32_t) debug_send_task2);
+	
+	//#6 系统进程Reveice
 	add_new_task(SYS_TASK, (uint32_t) debug_recv_task);
 
-	//#6 系统调用
+	//#7 系统调用
 	add_new_task(SYS_TASK, (uint32_t) debug_sys_call);	
+
+	//#8 系统硬盘驱动进程
+	add_new_task(SYS_TASK, (uint32_t) hd_task);
 	
+	//#9 硬盘驱动测试进程
+	add_new_task(SYS_TASK, (uint32_t) debug_hd_task);
+		
 	//初始化进程
 	task_schedule();
 	init_schedule();

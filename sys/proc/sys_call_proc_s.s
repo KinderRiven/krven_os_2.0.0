@@ -29,4 +29,13 @@ send_message:
 	int		SYS_INT_NO
 	add		esp, 8
 	ret
+
+[GLOBAL get_proc_pid]
+get_proc_pid:
+	
+	push	dword esp
+	push	dword SYS_PROC_PID
+	int		SYS_INT_NO
+	add		esp, 8
+	ret	
 	

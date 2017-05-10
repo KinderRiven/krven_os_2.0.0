@@ -13,6 +13,7 @@ void init_sys_call()
 	
 	//51.内核打印函数
 	set_sys_call(SYS_WRITE, (uint32_t) sys_write);
+	set_sys_call(SYS_PROC_PID, (uint32_t) sys_get_proc_pid);
 
 	//151.内核打印函数
 	set_sys_call(SYS_WRITE_COLOR, (uint32_t) sys_write_color);

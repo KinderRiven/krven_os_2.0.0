@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "string.h"
 #include "stdio.h"
+#include "hd.h"
 #include "sys.h"
 #include "proc.h"
 
@@ -14,6 +15,8 @@ void sleep(uint32_t time)
 			for(k = 0; k < time; k++);
 }
 
+
+//#1
 void debug_user_task()
 {
 	uint8_t byte = 'A';
@@ -23,6 +26,7 @@ void debug_user_task()
 	}
 }
 
+//#2
 void debug_sys_task()
 {
 
@@ -33,18 +37,24 @@ void debug_sys_task()
 	}
 }
 
+//#3
 void debug_sys_call()
 {
 	
 	while(1){
-		printf("S");
+		//printf("S");
 		sleep(100);
 	}
 }
 
+
+//#4
 void debug_send_task()
 {
 	char byte = 'C';
+	
+	pid_t pid;
+	get_proc_pid(&pid);
 	
 	msg_t msg;
 	msg.outb = 'A';
@@ -52,24 +62,64 @@ void debug_send_task()
 	sleep(100);
 	
 	while(1){
-		send_message(4, 5, &msg);
+		send_message(pid, 6, &msg);
 		debug_print_right(byte);
 		sleep(100);
 		msg.outb++;
 	};
 }
 
-void debug_recv_task()
+//#5
+void debug_send_task2()
 {
 	char byte = 'D';
 	
 	msg_t msg;
-	recv_message(4, 5, &msg);
+	msg.outb = '0';
+
+	pid_t pid;
+	get_proc_pid(&pid);
+
+	while(1)
+	{
+		send_message(pid, 6, &msg);
+		debug_print_right(byte);
+		sleep(100);
+		msg.outb++;
+	}
+}
+
+//#6
+void debug_recv_task()
+{
+	char byte = 'E';
+	
+	pid_t pid;
+	get_proc_pid(&pid);	
+	
+	msg_t msg;
 	
 	while(1){
-		recv_message(4, 5, &msg);
+		recv_message(ANY, pid, &msg);
 		debug_print_left(msg.outb);
 		debug_print_right(byte);
 		sleep(100);
 	};
+}
+
+
+//#7
+void debug_hd_task()
+{
+
+	msg_t msg;
+	pid_t pid;
+
+	get_proc_pid(&pid);
+	msg.int_no = 0xFF;
+
+	sleep(1000);
+	send_message(pid, hd_pid, &msg);	
+	while(1){}
+
 }

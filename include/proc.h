@@ -7,7 +7,7 @@
 
 #define LDT_SIZE 2
 #define PROC_STACK_SIZE 8192
-#define PROC_MAX_NUM 10
+#define PROC_MAX_NUM 11
 
 #define ANY -1
 #define PROC_DEBUG 0

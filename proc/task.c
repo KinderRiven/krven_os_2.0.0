@@ -41,13 +41,45 @@ void show_task_table()
 	for(i = 0; i < 4; i++)
 	{
 		printf("%s", table_header[i]);
-		for(j = 0; j < line_width - strlen(table_header[i]); j++)
+		for(j = 0; j <= line_width - strlen(table_header[i]); j++)
 			printf(" ");
 	}
 	printf("\n");
 	
 	for(i = 0; i < task_size; i++)
 	{
-		printf("%-10d%-10d%-10d%-10d\n", task_table[i].tid, task_table[i].pid, task_table[i].level, task_table[i].status);
+		printc(c_black, c_light_red, "%-10d%-10d", task_table[i].tid, task_table[i].pid);
+		
+		switch(task_table[i].level)
+		{	
+			case KERNEL_TASK : 
+				printc(c_black, c_red, "KERENL    ");	
+				break;
+			case SYS_TASK:
+				printc(c_black, c_cyan, "SYS       ");
+				break;
+			case USER_TASK:
+				printc(c_black, c_magenta, "USER      ");
+				break;
+			default:
+				printf(c_black, c_light_red, "ERROR     ");
+				break;	
+		}
+		switch(task_table[i].status)
+		{	
+			case TASK_STOP : 
+				printc(c_black, c_red, "STOP");	
+				break;
+			case TASK_RUNNING:
+				printc(c_black, c_green, "RUNNING");
+				break;
+			case TASK_WAITING:
+				printc(c_black, c_light_brown, "WAITING");
+				break;
+			default:
+				printf("ERROR");
+				break;	
+		}
+		printf("\n");
 	}	
 }

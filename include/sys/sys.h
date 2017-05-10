@@ -14,7 +14,10 @@
 #define SYS_WRITE_CLEAR 2
 
 //单参调用
+//write
 #define SYS_WRITE 51
+//获得进程ID号
+#define SYS_PROC_PID 52
 
 //双参调用
 #define SYS_ALERT_WRITE_COLOR 101
