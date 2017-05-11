@@ -3,15 +3,17 @@
 
 #include "types.h"
 
-#define MESSAGE_SIZE 1024
+#define MESSAGE_SIZE 128
+
+#define MSG_INTERRUPT	0xFF
+#define MSG_DEV_OPEN	0x01
 
 typedef
 struct msg_t{
 	
-	uint8_t message[MESSAGE_SIZE];	
-	int	int_no;
-	uint8_t outb;
-	
+	uint8_t type;
+	uint8_t device;
+
 }msg_t;
 
 

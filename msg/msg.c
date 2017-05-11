@@ -5,26 +5,12 @@
 #include "stdio.h"
 
 static void insert_msg_queue(proc_t *proc_from, proc_t *proc_to);
-static void msg_debug(proc_t *proc);
 static void msg_copy(msg_t *msg_a, msg_t *msg_b);
 
 static void msg_copy(msg_t *msg_to, msg_t *msg_from)
 {
-	msg_to -> int_no = msg_from -> int_no;
-	msg_to -> outb = msg_from -> outb;
-	
-	int i;
-	for(i = 0; i < MESSAGE_SIZE; i++)
-	{
-		msg_to -> message[i] = msg_from -> message[i];
-	}
-
-}
-
-
-static void msg_debug(proc_t *proc)
-{
-
+	msg_to -> type 	 = msg_from -> type;
+	msg_to -> device = msg_from -> device;
 }
 
 //发送消息的函数

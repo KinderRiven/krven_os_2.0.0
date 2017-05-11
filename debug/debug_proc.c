@@ -57,7 +57,7 @@ void debug_send_task()
 	get_proc_pid(&pid);
 	
 	msg_t msg;
-	msg.outb = 'A';
+	msg.type = 'A';
 	
 	sleep(100);
 	
@@ -65,7 +65,7 @@ void debug_send_task()
 		send_message(pid, 6, &msg);
 		debug_print_right(byte);
 		sleep(100);
-		msg.outb++;
+		msg.type++;
 	};
 }
 
@@ -75,7 +75,7 @@ void debug_send_task2()
 	char byte = 'D';
 	
 	msg_t msg;
-	msg.outb = '0';
+	msg.type = '0';
 
 	pid_t pid;
 	get_proc_pid(&pid);
@@ -85,7 +85,7 @@ void debug_send_task2()
 		send_message(pid, 6, &msg);
 		debug_print_right(byte);
 		sleep(100);
-		msg.outb++;
+		msg.type++;
 	}
 }
 
@@ -101,8 +101,8 @@ void debug_recv_task()
 	
 	while(1){
 		recv_message(ANY, pid, &msg);
-		debug_print_left(msg.outb);
 		debug_print_right(byte);
+		debug_print_left(msg.type);
 		sleep(100);
 	};
 }
@@ -116,9 +116,9 @@ void debug_hd_task()
 	pid_t pid;
 
 	get_proc_pid(&pid);
-	msg.int_no = 0xFF;
+	msg.type = MSG_DEV_OPEN;
 
-	sleep(1000);
+	sleep(200);
 	send_message(pid, hd_pid, &msg);	
 	while(1){}
 
