@@ -31,6 +31,9 @@ struct proc_regs_t{
 	uint32_t ecx;
 	uint32_t eax;
 	
+	//call返回
+	uint32_t retaddr;
+
 	//错误号、中断
 	uint32_t int_no;	
 	uint32_t err_code;	

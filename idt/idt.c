@@ -17,12 +17,12 @@ extern void idt_flush(uint32_t);
 void isr_handler(proc_regs_t *regs){
 
 	
-	printc(c_black, c_red, "\ngs: 0x%x ,fs: 0x%x ,es: 0x%x ,ds: 0x%x\n", regs -> gs, regs -> fs, regs -> es, regs -> ds);	
-	printc(c_black, c_red, "int_no: %d , err_code: %d\n", regs -> int_no, regs -> err_code);
+	printk_color(c_black, c_red, "\ngs: 0x%x ,fs: 0x%x ,es: 0x%x ,ds: 0x%x\n", regs -> gs, regs -> fs, regs -> es, regs -> ds);	
+	printk_color(c_black, c_red, "int_no: %d , err_code: %d\n", regs -> int_no, regs -> err_code);
 	
-	printc(c_black, c_red, "eip: 0x%x ,cs: 0x%x ,eflags: 0x%x ,esp: 0x%x ,ss: 0x%x\n", 
+	printk_color(c_black, c_red, "eip: 0x%x ,cs: 0x%x ,eflags: 0x%x ,esp: 0x%x ,ss: 0x%x\n", 
 			regs -> eip, regs -> cs, regs -> eflags, regs -> esp, regs -> ss);
-	//printf(c_black, c_red, "retaddr : %d\n", regs -> retaddr);
+	printk_color(c_black, c_red, "retaddr : %d\n", regs -> retaddr);
 	
 	while(1);
 }

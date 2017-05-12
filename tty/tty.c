@@ -143,7 +143,7 @@ void init_tty()
 		tty[i].point = 0;
 		tty[i].len = 0;		
 
-		console_clear();
+		write_clear();
 		ui_welcome();
 		tty_print_header(i);
 		console_copy_to(tty[i].console_buffer.video_memory, &tty[i].console_buffer.cursor_x, &tty[i].console_buffer.cursor_y);	

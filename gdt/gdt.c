@@ -78,15 +78,15 @@ void gdt_debug(uint16_t idx)
 	uint8_t dpl  = (uint8_t) (tmp_descriptor -> access >> 5) & 0x03; 
 	uint8_t g = (uint8_t) (tmp_descriptor -> granularity >> 7) & 0x01;
 
-	printf("----------------GDT DEBUG----------------\n");	
-	printf("[ADD]   : 0x%x\n", tmp_descriptor); 
-	printf("[INDEX] : 0x%x (%d)\n", idx,   idx);
-	printf("[BASE]  : 0x%x\n", base);
-	printf("[LIMIT] : 0x%x (%d)\n", limit, limit);
-	printf("[TYPE]  : 0x%x\n", type);
-	printf("[DPL]	: 0x%x (%d)\n",dpl, dpl);
-	printf("[G]     : 0x%x\n", g);	
-	printf("-----------------------------------------\n");
+	printk("----------------GDT DEBUG----------------\n");	
+	printk("[ADD]   : 0x%x\n", tmp_descriptor); 
+	printk("[INDEX] : 0x%x (%d)\n", idx,   idx);
+	printk("[BASE]  : 0x%x\n", base);
+	printk("[LIMIT] : 0x%x (%d)\n", limit, limit);
+	printk("[TYPE]  : 0x%x\n", type);
+	printk("[DPL]	: 0x%x (%d)\n",dpl, dpl);
+	printk("[G]     : 0x%x\n", g);	
+	printk("-----------------------------------------\n");
 
 }	
 

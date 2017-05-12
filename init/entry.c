@@ -66,8 +66,8 @@ void kern_entry(){
 
 void kern_init()
 {
-	console_clear();
 	
+	console_clear();	
 	//printc(c_black, c_light_red, "Welcome to K'OS!\n");	
 	
 	//初始化全局描述符号
@@ -115,13 +115,12 @@ void kern_init()
 	//初始化任务列表
 	init_task_table();
 	
-	
 	//新建程序
 	//new_task_proc((uint32_t) tty_start);
 	//new_task_proc((uint32_t) user_task_a);
 	//new_task_proc((uint32_t) sys_task_a);
 	//new_task_proc((uint32_t) keyboard_buffer_start);	
-
+	
 	//新建任务
 	//#0 tty进程
 	add_new_task(SYS_TASK,  (uint32_t) tty_start);

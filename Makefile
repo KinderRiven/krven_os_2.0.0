@@ -48,7 +48,7 @@ bochs:
 	bochs -f bochsrc.txt
 .PHONY : qemu
 qemu:
-	qemu -fda floppy.img -boot a
+	qemu -fda floppy.img -boot a -hda 80m.img
 
 .PHONY : show_dir
 show_dir:

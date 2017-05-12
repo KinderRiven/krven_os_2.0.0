@@ -19,9 +19,7 @@ void printk(const char *format, ...)
 	va_end(args);
 
 	buff[i] = '\0';
-	
 	console_write(buff);
-	//write(buff);
 }
 
 //用户级
@@ -37,8 +35,6 @@ void printf(const char *format, ...)
 	va_end(args);
 
 	buff[i] = '\0';
-
-	//console_write(buff);
 	write(buff);
 }
 
@@ -56,7 +52,6 @@ void printk_color(c_color_t back, c_color_t fore, const char *format, ...)
 
 	buff[i] = '\0';
 	console_write_color(buff, back, fore);
-	//write_color(buff, back, fore);
 }
 
 //用户级

@@ -21,9 +21,8 @@ idt_flush:
 %macro ISR_NOERRCODE 1
 [GLOBAL isr%1]
 isr%1:
-	cli						;关中断
-	push 0					;压入错误号
-	push %1					;压入中断号
+	push dword 0			;压入错误号
+	push dword %1			;压入中断号
 	jmp	isr_common_stub		
 %endmacro
 
@@ -31,17 +30,15 @@ isr%1:
 %macro ISR_ERRCODE 1
 [GLOBAL isr%1]
 isr%1:						
-	cli						;自动压入错误号
-	push %1					;压入中断号
+	push dword %1			;压入中断号
 	jmp	isr_common_stub		
 %endmacro
 
 %macro IRQ	2
 [GLOBAL irq%1]
 irq%1:
-	cli
-	push 0					;压入错误号			
-	push %2					;压入中断号
+	push dword 0			;压入错误号			
+	push dword %2			;压入中断号
 	jmp	 irq_common_stub
 %endmacro
 
@@ -103,15 +100,15 @@ IRQ  14,    46 	; IDE0 传输控制使用
 IRQ  15,    47 	; IDE1 传输控制使用
 				; sys_call 16,48
 
-[GLOBAL isr_common_stub]
-[EXTERN isr_handler]
-isr_common_stub:
-	
-	; 进入中断
-	; 若特权级发生变化 依次压入: (error code) ss esp eflags cs eip
-	; 否则压入 :  (error code) eflags cs eip
-	
-	; 从这里开始进行现场的保护	
+
+;寄存器的存储过程
+save:
+	; 在执行之前已经压入了 3部分内容
+	; 1. ss esp eflags cs eip	
+	; 2. err_code int_no
+	; 3. retaddr
+
+	; 这里已经压入了retaddr
 	pushad
 	push	ds
 	push	es
@@ -124,10 +121,20 @@ isr_common_stub:
 	mov		es,	dx
 
 	; 恢复到内核栈
+	; 保存esp的当前指针到eax,以后我们还需要访问寄存器的内容说不定
+	; 如：打印出错信息等
 	mov		eax, esp
+	
+	; 切换到内核栈
 	mov		esp, kernel_stack_top
+	jmp		[eax + RET_ADDR]
 
-	; 压入寄存器参数
+
+[GLOBAL isr_common_stub]
+[EXTERN isr_handler]
+isr_common_stub:
+
+	call	save
 	push	eax
 	call	isr_handler
 
@@ -143,41 +150,16 @@ isr_common_stub:
 	pop		es
 	pop		ds
 	popad
-	add		esp, 8
+	add		esp, 12
 	iretd
 
 [GLOBAL irq_common_stub]
 [EXTERN irq_handler]
 
 irq_common_stub:
-	
-	; 进入中断
-	; 若特权级发生变化 依次压入: (error code) ss esp eflags cs eip
-	; 否则压入 :  (error code) eflags cs eip
-	
-	; 从这里开始进行现场的保护	
-	pushad
-	push	ds
-	push	es
-	push	fs	
-	push	gs
 
-	; 恢复到内核态
-	mov		dx, ss
-	mov		ds, dx
-	mov		es,	dx
-
-	; debug函数
-	;inc	byte [gs:0]
-	;mov	al, 0x20
-	;out	0x20, al
-
-	; 恢复到内核栈
-	mov		eax, esp
-	mov		esp, kernel_stack_top
-
-	; 压入寄存器参数
-	push	eax
+	call	save
+	push	eax	
 	call	irq_handler
 
 	; 离开内核栈
@@ -192,44 +174,43 @@ irq_common_stub:
 	pop		es
 	pop		ds
 	popad
-	add		esp, 8
+	add		esp, 12
 	iretd
 
 [GLOBAL sys_call]
 [EXTERN sys_call_table]
 sys_call:
 
-	cli
 	; eax里面放着存在的中断号
-	push	0
-	push	48	
+	push	dword 0
+	push	dword 48
 	
-	; 进入中断
-	; 若特权级发生变化 依次压入: (error code) ss esp eflags cs eip
-	; 否则压入 :  (error code) eflags cs eip
-	
-	; 从这里开始进行现场的保护	
-	pushad
-	push	ds
-	push	es
-	push	fs	
-	push	gs
+	call	save
 
-	; 恢复到内核栈, 进行参数转移
-	
+	; 返回之后，eax里存放寄存器栈顶
 	; 找到调用号
 	; 找到之前的栈指针
-	mov		ecx, [esp + REGS_ESP]
-	; 找到中断号
+	; 目前栈指向内容为
+	; -------
+	; |  4  |
+	; |  3  |
+	; |  2  |
+	; |  1  | <-- ebx
+	; | ret |
+	; | id  | <-- ecx
+	; -------
+	mov		ecx, [eax + REGS_ESP]
+
+	; eax存放着系统调用号
 	mov		eax, [ecx]
-	; 找到压栈参数地址
-	mov		ebx, [ecx + 4]
-	; 切换到内核栈
-	mov		esp, kernel_stack_top
+	
+	; ebx指向调用传参
+	mov		ebx, ecx
+	add		ebx, 8
 
 	; 压入寄存器参数
 	; 中断号
-	; 根据中断号选择压入参数的个数	
+	; 根据中断号选择压入参数的个数
 	cmp		eax,	SYS_TREBLE
 	ja		.3
 	cmp		eax,	SYS_DOUBLE
@@ -239,17 +220,12 @@ sys_call:
 	cmp		eax, 	SYS_ZERO
 	ja		.0
 .3:
-	push	dword [ebx + 12]
-.2:
 	push	dword [ebx + 8]
-.1:
+.2:
 	push	dword [ebx + 4]
+.1:
+	push	dword [ebx]
 .0:
-	; 直接跳入中断函数
-	; 恢复到内核态
-	mov		dx, ss
-	mov		ds, dx
-	mov		es,	dx
 	call	[sys_call_table + eax * 4]
 
 	; 离开内核栈
@@ -264,7 +240,8 @@ sys_call:
 	pop		es
 	pop		ds
 	popad
-	add		esp, 8
+	add		esp, 12
 	iretd
+
 .end:
 

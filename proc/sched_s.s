@@ -18,5 +18,8 @@ first_proc_start:
 	pop		es
 	pop		ds
 	popad									;EDI,ESI,EBP,ESP,EBX,EDX,ECX,EAX.
-	add		esp, 8							;int_no, err_code
+	
+	add		esp, 12							;int_no
+											;err_code
+											;ret_addr
 	iretd									;iretd 弹出eip cs eflags esp ss
