@@ -1,6 +1,14 @@
 #ifndef INCLUDE_CONST_H_
 #define INCLUDE_CONST_H_
 
+
+//扇区大小 512 字节
+#define SECTOR_SIZE		512
+
+//扇区位数 512 × 8 位
+#define SECTOR_BITS		(SECTOR_SIZE * 8)
+
+
 /*********************************
  *                               *
  *	 Here is gdt descriptor      *

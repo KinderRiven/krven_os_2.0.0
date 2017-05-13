@@ -15,6 +15,9 @@
 #define MAKE_DEVICE_REG(lba, drv, lba_highest) ((lba << 6) | 			\
 												(drv << 4) | 			\
 												(lba_highest & 0xF) | 0xA0)
+#define ATA_IDENTIFY	0xEC
+#define ATA_READ		0x20
+#define ATA_WRITE		0x30
 
 #define REG_DATA		0x1F0
 
