@@ -5,8 +5,6 @@
 #include "sys.h"
 #include "proc.h"
 
-static void sleep(uint32_t time);
-
 void sleep(uint32_t time)
 {
 	int i, j, k;
@@ -118,8 +116,7 @@ void debug_hd_task()
 	get_proc_pid(&pid);
 	msg.type = MSG_DEV_OPEN;
 
-	sleep(200);
+	sleep(50);
 	send_message(pid, hd_pid, &msg);	
 	while(1){}
-
 }

@@ -5,8 +5,13 @@
 [EXTERN current_proc]
 [EXTERN tss]
 
+;用于标记当前进程是否在内核中
+;用于可重入处理
+[EXTERN k_reenter]
+
 %include "proc.inc"
 %include "sys.inc"
+%include "const.inc"
 
 ;刷行idtr寄存器
 [GLOBAL idt_flush]
@@ -17,30 +22,112 @@ idt_flush:
 
 
 ;用多行宏定义去定义更加方便
+;---------------------------------------------------------;
+
 ;没有错误代码的中断
+[EXTERN isr_handler]
 %macro ISR_NOERRCODE 1
 [GLOBAL isr%1]
 isr%1:
+
 	push dword 0			;压入错误号
 	push dword %1			;压入中断号
-	jmp	isr_common_stub		
+
+	call	save
+	push	eax
+	
+	;到这里的内核栈应该是这样的
+	; ------- 高
+	; | ret | 
+	; | eax | <- esp
+	; ------- 低
+
+	call	isr_handler
+	add		esp, 4
+	
+	;返回	
+	ret	
+
 %endmacro
+
+;---------------------------------------------------------;
 
 ;有错误代码的中断
 %macro ISR_ERRCODE 1
 [GLOBAL isr%1]
-isr%1:						
+isr%1:
+							
 	push dword %1			;压入中断号
-	jmp	isr_common_stub		
+	
+	call	save
+	push	eax
+
+	call	isr_handler
+	add		esp, 4
+
+	;返回	
+	ret
+	
 %endmacro
 
-%macro IRQ	2
+;---------------------------------------------------------;
+
+[EXTERN irq_handler]
+%macro IRQ_MASTER	2
 [GLOBAL irq%1]
 irq%1:
+	
 	push dword 0			;压入错误号			
 	push dword %2			;压入中断号
-	jmp	 irq_common_stub
+
+	call	save
+	push	eax	
+	
+	;这里开始屏蔽同类中断
+	in		al,	INT_M_CTLMASK
+	or		al, (1 << %1)
+	out	INT_M_CTLMASK, al
+	
+	;开中断，可重入		
+	sti
+	call	irq_handler
+	
+	;关中断，还原现场
+	cli
+	add		esp, 4
+	
+	;解除同类中断
+	in		al, INT_M_CTLMASK
+	and		al, ~(1 << %1)
+	out		INT_M_CTLMASK, al
+
+	;返回	
+	ret
+
 %endmacro
+
+;---------------------------------------------------------;
+
+%macro IRQ_SLAVE	2
+[GLOBAL irq%1]
+irq%1:
+	
+	push dword 0			;压入错误号			
+	push dword %2			;压入中断号
+
+	call	save
+	push	eax	
+
+	call	irq_handler
+	add		esp, 4
+	
+	;返回	
+	ret
+
+%endmacro
+
+;---------------------------------------------------------;
+
 
 ; 定义中断处理函数
 ISR_NOERRCODE  0 	; 0 #DE 除 0 异常
@@ -82,28 +169,31 @@ ISR_NOERRCODE 31
 ISR_NOERRCODE 255
 
 ; 32～255 用户自定义
-IRQ	  0,    32	; 时钟中断
-IRQ   1,    33 	; 键盘
-IRQ   2,    34 	; 与 IRQ9 相接，MPU-401 MD 使用
-IRQ   3,    35 	; 串口设备
-IRQ   4,    36 	; 串口设备
-IRQ   5,    37 	; 建议声卡使用
-IRQ   6,    38 	; 软驱传输控制使用
-IRQ   7,    39 	; 打印机传输控制使用
-IRQ   8,    40 	; 即时时钟
-IRQ   9,    41 	; 与 IRQ2 相接，可设定给其他硬件
-IRQ  10,    42 	; 建议网卡使用
-IRQ  11,    43 	; 建议 AGP 显卡使用
-IRQ  12,    44 	; 接 PS/2 鼠标，也可设定给其他硬件
-IRQ  13,    45 	; 协处理器使用
-IRQ  14,    46 	; IDE0 传输控制使用
-IRQ  15,    47 	; IDE1 传输控制使用
-				; sys_call 16,48
+IRQ_MASTER	 0,    32	; 时钟中断
+IRQ_MASTER   1,    33 	; 键盘
+IRQ_MASTER   2,    34 	; 与 IRQ9 相接，MPU-401 MD 使用
+IRQ_MASTER   3,    35 	; 串口设备
+IRQ_MASTER   4,    36 	; 串口设备
+IRQ_MASTER   5,    37 	; 建议声卡使用
+IRQ_MASTER   6,    38 	; 软驱传输控制使用
+IRQ_MASTER   7,    39 	; 打印机传输控制使用
+IRQ_SLAVE    8,    40 	; 即时时钟
+IRQ_SLAVE    9,    41 	; 与 IRQ2 相接，可设定给其他硬件
+IRQ_SLAVE   10,    42 	; 建议网卡使用
+IRQ_SLAVE   11,    43 	; 建议 AGP 显卡使用
+IRQ_SLAVE   12,    44 	; 接 PS/2 鼠标，也可设定给其他硬件
+IRQ_SLAVE   13,    45 	; 协处理器使用
+IRQ_SLAVE   14,    46 	; IDE0 传输控制使用
+IRQ_SLAVE   15,    47 	; IDE1 传输控制使用
+						; sys_call 16,48
 
 
 ;寄存器的存储过程
+
+;---------------------------------------------------------;
 save:
-	; 在执行之前已经压入了 3部分内容
+	
+	; 在执行之前已经压入了3部分内容
 	; 1. ss esp eflags cs eip	
 	; 2. err_code int_no
 	; 3. retaddr
@@ -119,31 +209,51 @@ save:
 	mov		dx, ss
 	mov		ds, dx
 	mov		es,	dx
-
+	
 	; 恢复到内核栈
 	; 保存esp的当前指针到eax,以后我们还需要访问寄存器的内容说不定
 	; 如：打印出错信息等
 	mov		eax, esp
-	
-	; 切换到内核栈
-	mov		esp, kernel_stack_top
+
+	inc		dword [k_reenter]				; if(++k_reenter != 0)							
+	cmp		dword [k_reenter], 0
+	jne		.save_reenter
+
+	mov		esp, kernel_stack_top			; 切换到内核栈
+	push	restart							; 为ret做准备
+	jmp		[eax + RET_ADDR]				; 根据retaddr进行返回
+
+;---------------------------------------------------------;
+
+.save_reenter:
+	;mov		bh, 0Fh
+	;mov		bl, '?'
+	;mov		[gs : (80 * 0 + 0) * 2], bx
+	push	restart_reenter	
 	jmp		[eax + RET_ADDR]
 
+;---------------------------------------------------------;
 
-[GLOBAL isr_common_stub]
-[EXTERN isr_handler]
-isr_common_stub:
+; 这里开始是离开内核栈的操作
+; 最终通过iret指令进行任务切换
 
-	call	save
-	push	eax
-	call	isr_handler
-
+; 如果在内核中进行镶嵌跳转，不需要进行esp的切换
+restart:
+	
 	; 离开内核栈
 	mov		esp, [current_proc]
 	lldt	[esp + PROC_LDTR]
 	lea		eax, [esp + REGS_TOP]
 	mov		dword [tss + TSS3_S_SP0], eax
 
+;---------------------------------------------------------;
+
+; 否则需要进行esp的切换
+restart_reenter:
+
+	; 出内核 k_reenter -= 1	
+	dec		dword [k_reenter]
+	
 	; 恢复现场
 	pop		gs
 	pop		fs
@@ -153,30 +263,8 @@ isr_common_stub:
 	add		esp, 12
 	iretd
 
-[GLOBAL irq_common_stub]
-[EXTERN irq_handler]
-
-irq_common_stub:
-
-	call	save
-	push	eax	
-	call	irq_handler
-
-	; 离开内核栈
-	mov		esp, [current_proc]
-	lldt	[esp + PROC_LDTR]
-	lea		eax, [esp + REGS_TOP]
-	mov		dword [tss + TSS3_S_SP0], eax
-
-	; 恢复现场
-	pop		gs
-	pop		fs
-	pop		es
-	pop		ds
-	popad
-	add		esp, 12
-	iretd
-
+;---------------------------------------------------------;
+	
 [GLOBAL sys_call]
 [EXTERN sys_call_table]
 sys_call:
@@ -186,7 +274,7 @@ sys_call:
 	push	dword 48
 	
 	call	save
-
+	
 	; 返回之后，eax里存放寄存器栈顶
 	; 找到调用号
 	; 找到之前的栈指针
@@ -219,29 +307,48 @@ sys_call:
 	ja		.1
 	cmp		eax, 	SYS_ZERO
 	ja		.0
+
+	;三个参数的从这里走
 .3:
 	push	dword [ebx + 8]
+	push	dword [ebx + 4]
+	push	dword [ebx]
+
+	sti	
+	call	[sys_call_table + eax * 4]
+	cli	
+
+	add		esp, 12
+	ret
+	;两个参数的从这里走
 .2:
 	push	dword [ebx + 4]
+	push	dword [ebx]
+	
+	sti
+	call	[sys_call_table + eax * 4]
+	cli
+
+	add		esp, 8
+	ret
+	;一个参数的从这里走
 .1:
 	push	dword [ebx]
-.0:
+	
+	sti
 	call	[sys_call_table + eax * 4]
+	cli	
 
-	; 离开内核栈
-	mov		esp, [current_proc]
-	lldt	[esp + PROC_LDTR]
-	lea		eax, [esp + REGS_TOP]
-	mov		dword [tss + TSS3_S_SP0], eax
+	add		esp, 4
+	ret
+	;无参数的从这里走
+.0:
 
-	; 恢复现场
-	pop		gs
-	pop		fs
-	pop		es
-	pop		ds
-	popad
-	add		esp, 12
-	iretd
+	sti
+	call	[sys_call_table + eax * 4]
+	cli
+
+	ret
 
 .end:
 

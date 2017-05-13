@@ -5,12 +5,14 @@
 
 proc_t* current_proc;
 static int num = 0;
+int k_reenter;
 
 extern void first_proc_start();
 
 //初始化调度进程
 void init_schedule()
 {
+	k_reenter = -1;
 	current_proc = &(procs[0]);
 	first_proc_start();
 }
@@ -41,6 +43,7 @@ void task_schedule()
 {
 
 	int i = 0;
+
 	for(i = 0; i < task_size; i++)
 	{
 		if(task_table[i].status == TASK_WAITING)

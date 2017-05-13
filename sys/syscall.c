@@ -15,10 +15,18 @@ void init_sys_call()
 	set_sys_call(SYS_WRITE, (uint32_t) sys_write);
 	set_sys_call(SYS_PROC_PID, (uint32_t) sys_get_proc_pid);
 
+	//102.发送中断
+	set_sys_call(SYS_SEND_INT, (uint32_t) sys_send_interrupt);
+	
+	//103.接收中断
+	set_sys_call(SYS_RECV_INT, (uint32_t) sys_recv_interrupt);
+
 	//151.内核打印函数
 	set_sys_call(SYS_WRITE_COLOR, (uint32_t) sys_write_color);
+	
 	//152
 	set_sys_call(SYS_SEND_MESSAGE, (uint32_t) sys_send_message);
+	
 	//153
 	set_sys_call(SYS_RECV_MESSAGE, (uint32_t) sys_recv_message);
 }

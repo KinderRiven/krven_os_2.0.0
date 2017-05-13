@@ -11,4 +11,5 @@ debug_print_left:
 	mov	al, [esp + 4]
 	mov	[gs : (80 * 24 + 0) * 2], ax
 	ret
+
 	

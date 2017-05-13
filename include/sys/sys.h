@@ -21,6 +21,8 @@
 
 //双参调用
 #define SYS_ALERT_WRITE_COLOR 101
+#define SYS_SEND_INT	102
+#define SYS_RECV_INT	103	
 
 //三参数调用
 #define SYS_WRITE_COLOR	 151

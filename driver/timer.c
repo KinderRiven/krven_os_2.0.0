@@ -11,6 +11,7 @@ void clock_handler(){
 	
 	//进程调度 
 	proc_schedule();
+
 }
 
 // 第一位 0 计数器使用二进制 1使用BCD码

@@ -34,4 +34,24 @@ get_proc_pid:
 	int		SYS_INT_NO
 	add		esp, 4
 	ret	
-	
+
+[GLOBAL send_interrupt]
+send_interrupt:
+	push	dword SYS_SEND_INT
+	int		SYS_INT_NO
+	add		esp, 4
+	ret	
+
+
+[GLOBAL recv_interrupt]
+recv_interrupt:
+	push	dword SYS_RECV_INT
+	int		SYS_INT_NO
+	add		esp, 4
+	ret
+
+
+
+
+
+

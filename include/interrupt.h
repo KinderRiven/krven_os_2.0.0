@@ -1,0 +1,6 @@
+#ifndef INCLUDE_INTERRUPT_H_
+#define INCLUDE_INTERRUPT_H_
+
+#define INTERRUPT_PID 0
+
+#endif

@@ -12,6 +12,12 @@
 #define ANY -1
 #define PROC_DEBUG 0
 
+#define HD_INTERRUPT 0xFFFF
+
+#define NO_INT 		0
+#define HAS_INT		1
+#define WAIT_INT  	2
+
 typedef
 struct proc_regs_t{
 
@@ -61,8 +67,12 @@ struct proc_t{
 										//以下是进程的消息处理内容
 	msg_t *msg;							//消息结构体
 
+	int int_status;						//0无中断 1有中断 2等待中断
+	int interrupt_id;					//中断号
+
 	pid_t send_to;						//想发送消息去哪里
 	pid_t recv_from;					//想从哪里接收到消息
+
 	int	msg_block;						//是否有消息阻塞	
 	struct proc_t *msg_head;			//消息接收
 	struct proc_t *msg_next;			//链表指针	
@@ -88,7 +98,12 @@ pid_t new_user_proc(uint32_t fun);
 
 //消息发送
 void msg_send(proc_t *proc_from, pid_t send_to, msg_t *msg);
-//消息接收
+//消息接收（阻塞）
 void msg_receive(proc_t *proc_to, pid_t recv_from, msg_t *msg);
 
+//产生中断
+void msg_send_interrupt(pid_t pid, int interrupt_id);
+
+//接收中断（阻塞）
+void msg_recv_interrupt(pid_t pid, int interrupt_id);
 #endif

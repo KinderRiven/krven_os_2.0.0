@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+void sleep(uint32_t time);
+
 void debug_user_task();
 void debug_sys_task();
 

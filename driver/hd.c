@@ -1,4 +1,6 @@
 #include "hd.h"
+#include "proc.h"
+#include "debug.h"
 #include "common.h"
 #include "stdio.h"
 #include "sys.h"
@@ -16,7 +18,7 @@ static void wait_interrupt();
 //硬盘中断发生的时候进行的处理
 void hd_handler()
 {
-	
+	msg_send_interrupt(hd_pid, HD_INTERRUPT);	
 }
 
 //初始化硬盘驱动程序
@@ -42,7 +44,7 @@ void hd_task()
 		switch(msg.type)
 		{
 			case MSG_DEV_OPEN:
-				printf("Hard disk task start to running!\n");
+				//printf("Hard disk task start to running!");
 				hd_identify(msg.device);
 				break;
 			default:
@@ -59,14 +61,17 @@ void hd_identify(uint8_t drive)
 	//lba模式 选择主设备
 	cmd.device = MAKE_DEVICE_REG(0, drive, 0);
 
+	//进行硬盘操作
 	hd_cmd_out(&cmd);	
-	wait_interrupt();	
 
+	//等待一个硬盘读取结束中断	
+	wait_interrupt();
+
+	//printk("Finished a interrupt!\n");
 }
 
 static void hd_cmd_out(struct hd_cmd * cmd)
 {
-	
 	outb(REG_DEV_CTRL, 0);
 
 	outb(REG_FEATURE, cmd -> feature);		
@@ -81,5 +86,6 @@ static void hd_cmd_out(struct hd_cmd * cmd)
 
 static void wait_interrupt()
 {
-
+	//接收一个来自磁盘的中断
+	recv_interrupt(hd_pid,	HD_INTERRUPT);
 }

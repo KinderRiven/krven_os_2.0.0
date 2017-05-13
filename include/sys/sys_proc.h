@@ -13,6 +13,14 @@ void get_proc_num();
 void sys_get_proc_pid(pid_t *pid);
 void get_proc_pid(pid_t *pid);
 
+//#102 发送中断
+void send_interrupt(pid_t pid, int interrupt_id);
+void sys_send_interrupt(pid_t pid, int interrupt_id);
+
+//#103 接收中断
+void recv_interrupt(pid_t pid, int interrupt_id);
+void sys_recv_interrupt(pid_t pid, int interrupt_id);
+
 //进行消息传递的系统调用
 //#152 消息发送
 void sys_send_message(pid_t recv_from, pid_t send_to, msg_t *msg);

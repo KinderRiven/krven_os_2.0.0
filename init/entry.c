@@ -129,22 +129,22 @@ void kern_init()
 	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start);	
 	
 	//#2 用户进程A
-	add_new_task(USER_TASK, (uint32_t) debug_sys_task);
+	//add_new_task(USER_TASK, (uint32_t) debug_sys_task);
 	
 	//#3 用户进程B
-	add_new_task(USER_TASK, (uint32_t) debug_user_task);	
+	//add_new_task(USER_TASK, (uint32_t) debug_user_task);	
 	
 	//#4 系统进程send1
-	add_new_task(SYS_TASK, (uint32_t) debug_send_task);	
+	//add_new_task(SYS_TASK, (uint32_t) debug_send_task);	
 	
 	//#5 系统进程send2
-	add_new_task(SYS_TASK, (uint32_t) debug_send_task2);
+	//add_new_task(SYS_TASK, (uint32_t) debug_send_task2);
 	
 	//#6 系统进程Reveice
-	add_new_task(SYS_TASK, (uint32_t) debug_recv_task);
+	//add_new_task(SYS_TASK, (uint32_t) debug_recv_task);
 
 	//#7 系统调用
-	add_new_task(SYS_TASK, (uint32_t) debug_sys_call);	
+	//add_new_task(SYS_TASK, (uint32_t) debug_sys_call);	
 
 	//#8 系统硬盘驱动进程
 	add_new_task(SYS_TASK, (uint32_t) hd_task);

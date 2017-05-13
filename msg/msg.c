@@ -3,6 +3,7 @@
 #include "types.h"
 #include "string.h"
 #include "stdio.h"
+#include "hd.h"
 
 static void insert_msg_queue(proc_t *proc_from, proc_t *proc_to);
 static void msg_copy(msg_t *msg_a, msg_t *msg_b);
@@ -13,13 +14,65 @@ static void msg_copy(msg_t *msg_to, msg_t *msg_from)
 	msg_to -> device = msg_from -> device;
 }
 
+//发送一个中断
+void msg_send_interrupt(pid_t pid, int interrupt_id)
+{
+
+	proc_t *proc = &procs[pid];
+
+	//没中断,将中断加入队列
+	if(proc -> int_status == NO_INT)
+	{
+		proc -> int_status = HAS_INT;
+		proc -> interrupt_id = interrupt_id;	
+	}
+
+	//有中断,不响应新的中断内容
+	else if(proc -> int_status == HAS_INT);
+
+	//等待中断,取消阻塞
+	else if(proc -> int_status == WAIT_INT && interrupt_id == proc -> interrupt_id)
+	{
+		proc -> int_status = NO_INT;
+		proc -> msg_block = 0;
+	}
+}
+
+//等待接收一个中断
+void msg_recv_interrupt(pid_t pid, int interrupt_id)
+{
+	
+	proc_t *proc = &procs[pid];
+	
+	//没有等待的中断，申明需要等待的中断
+	if(proc -> int_status == NO_INT)
+	{
+		proc -> int_status = 2;
+		proc -> interrupt_id = interrupt_id;
+		proc -> msg_block = 1;
+	}
+
+	//已经有一个中断在了,解除阻塞
+	else if(proc -> int_status == HAS_INT && proc -> interrupt_id == interrupt_id)
+	{
+		proc -> int_status = 0;	
+	}
+	//已经有一个中断了，还出现这个问题，那就是出错了
+	else if(proc -> int_status == WAIT_INT)
+	{
+		printk("Error!\n");
+	}
+	
+}
+
 //发送消息的函数
 void msg_send(proc_t* proc_from, pid_t send_to, msg_t *msg)
 {
 	proc_t *proc_to = &procs[send_to];
 
 	//如果正在等待接收消息
-	if(proc_to -> msg_block && 
+	//如果发送的对象没有等待中断，并且已经阻塞的
+	if(proc_to->int_status != WAIT_INT && proc_to -> msg_block && 
 		(proc_to -> recv_from == proc_from -> pid || proc_to -> recv_from == ANY))
 	{
 		msg_copy(proc_to -> msg, msg);
@@ -42,6 +95,12 @@ void msg_send(proc_t* proc_from, pid_t send_to, msg_t *msg)
 //接收消息的函数
 void msg_receive(proc_t *proc_to, pid_t recv_from, msg_t *msg)
 {
+
+	if(proc_to -> msg_block == 1)
+	{
+		printk("Error!\n");
+	}	
+
 	//先检查消息队列查看是否有像接收的消息
 	if(proc_to -> msg_head != NULL)
 	{
