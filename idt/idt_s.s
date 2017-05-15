@@ -84,9 +84,9 @@ irq%1:
 	push	eax	
 	
 	;这里开始屏蔽同类中断
-	in		al,	INT_M_CTLMASK
-	or		al, (1 << %1)
-	out	INT_M_CTLMASK, al
+	in		al,	INT_M_CTLMASK	; al = 0x21
+	or		al, (1 << %1)		; al | (1 << IRQ_ID)	
+	out	INT_M_CTLMASK, al		; outb(0x21, al)
 	
 	;开中断，可重入		
 	sti
@@ -98,8 +98,8 @@ irq%1:
 	
 	;解除同类中断
 	in		al, INT_M_CTLMASK
-	and		al, ~(1 << %1)
-	out		INT_M_CTLMASK, al
+	and	al, ~(1 << %1)
+	out	INT_M_CTLMASK, al
 
 	;返回	
 	ret
@@ -111,7 +111,8 @@ irq%1:
 %macro IRQ_SLAVE	2
 [GLOBAL irq%1]
 irq%1:
-	
+
+	cli	
 	push dword 0			;压入错误号			
 	push dword %2			;压入中断号
 
@@ -169,6 +170,7 @@ ISR_NOERRCODE 31
 ISR_NOERRCODE 255
 
 ; 32～255 用户自定义
+						; Master
 IRQ_MASTER	 0,    32	; 时钟中断
 IRQ_MASTER   1,    33 	; 键盘
 IRQ_MASTER   2,    34 	; 与 IRQ9 相接，MPU-401 MD 使用
@@ -177,6 +179,8 @@ IRQ_MASTER   4,    36 	; 串口设备
 IRQ_MASTER   5,    37 	; 建议声卡使用
 IRQ_MASTER   6,    38 	; 软驱传输控制使用
 IRQ_MASTER   7,    39 	; 打印机传输控制使用
+						
+						; Slave
 IRQ_SLAVE    8,    40 	; 即时时钟
 IRQ_SLAVE    9,    41 	; 与 IRQ2 相接，可设定给其他硬件
 IRQ_SLAVE   10,    42 	; 建议网卡使用

@@ -28,12 +28,15 @@ void isr_handler(proc_regs_t *regs){
 }
 
 void irq_handler(proc_regs_t *regs){
-	
+
 	//发送重设信号
+	
+	//从片
 	if(regs -> int_no >= 40){
 		outb(0xA0, 0x20);
 	}
 	
+	//主片
 	outb(0x20, 0x20);
 	
 	if(interrupt_handlers[regs -> int_no]){
@@ -42,19 +45,34 @@ void irq_handler(proc_regs_t *regs){
 }
 
 void init_idt(){
+
+	// 初始化芯片	
+	// 重新映射IRQ表
+	// 主片端口 0x20 0x21
+	// 从片端口 0xA0 0xA1
 	
+	// 初始化主片、从片
+	// 0001 0001
 	outb(0x20, 0x11);
 	outb(0xA0, 0x11);
 
+	// 主片IRQ从0x20（32）号中断开始
 	outb(0x21, 0x20);
+	
+	// 从片IRQ从0x28（40）号中断开始
 	outb(0xA1, 0x28);
 
+	// 设置主片IR2引脚连接从片
 	outb(0x21, 0x04);
+	
+	// 告诉从片输出引脚和主片IR2号相连
 	outb(0xA1, 0x02);
 	
+	// 设置从片和主片按照8086方式工作
 	outb(0x21, 0x01);
 	outb(0xA1, 0x01);
 	
+	// 设置从片主片允许中断
 	outb(0x21, 0x0);
 	outb(0xA1, 0x0);
 	
@@ -120,7 +138,8 @@ void init_idt(){
 	idt_set_gate(48, (uint32_t)sys_call, KERNEL_CS_INDEX, TYPE_386IGate | DPL_1);
 	
 	// 255 将来用于实现系统调用
-	idt_set_gate(255, (uint32_t)isr255, 0x08, 0x8E);
+	idt_set_gate(255, (uint32_t)isr255, KERNEL_CS_INDEX, TYPE_386IGate | DPL_1);
+
 
 	// 更新设置中断描述符表
 	idt_flush((uint32_t)&idt_ptr);

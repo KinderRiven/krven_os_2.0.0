@@ -13,6 +13,7 @@
 #include "sys.h"
 #include "proc.h"
 #include "tss.h"
+#include "fs.h"
 #include "kernel.h"
 #include "debug.h"
 #include "sched.h"
@@ -150,7 +151,7 @@ void kern_init()
 	add_new_task(SYS_TASK, (uint32_t) hd_task);
 	
 	//#9 硬盘驱动测试进程
-	add_new_task(SYS_TASK, (uint32_t) debug_hd_task);
+	add_new_task(SYS_TASK, (uint32_t) mkfs);
 		
 	//初始化进程
 	task_schedule();

@@ -54,6 +54,10 @@ qemu:
 show_dir:
 	xxd -u -a -g 1 -c 16 -s +0x2600 -l 512 floppy.img
 
+.PHONY : show_hd
+show_hd:
+	xxd -u -a -g 1 -c 16 -l 512 80m.img
+
 .PHONY : update_kernel
 update_kernel:
 	sudo mount floppy.img /mnt/kos/

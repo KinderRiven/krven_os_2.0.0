@@ -1,3 +1,5 @@
+#include "const.h"
+#include "fs.h"
 #include "debug.h"
 #include "string.h"
 #include "stdio.h"
@@ -38,9 +40,16 @@ void debug_sys_task()
 //#3
 void debug_sys_call()
 {
+
+	char s1[50] = "123456abc";
+	char s2[50];
+
+	memcpy((uint8_t *) s2, (uint8_t *) s1, sizeof(s1));
+	printf("%s", s1);
+	printf(" %s", s2);
+	printf("\n");
 	
 	while(1){
-		//printf("S");
 		sleep(100);
 	}
 }
@@ -109,14 +118,5 @@ void debug_recv_task()
 //#7
 void debug_hd_task()
 {
-
-	msg_t msg;
-	pid_t pid;
-
-	get_proc_pid(&pid);
-	msg.type = MSG_DEV_OPEN;
-
-	sleep(50);
-	send_message(pid, hd_pid, &msg);	
-	while(1){}
+	
 }

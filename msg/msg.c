@@ -8,10 +8,13 @@
 static void insert_msg_queue(proc_t *proc_from, proc_t *proc_to);
 static void msg_copy(msg_t *msg_a, msg_t *msg_b);
 
+
+//拷贝函数
 static void msg_copy(msg_t *msg_to, msg_t *msg_from)
 {
-	msg_to -> type 	 = msg_from -> type;
-	msg_to -> device = msg_from -> device;
+	//msg_to -> type 	 = msg_from -> type;
+	//msg_to -> device = msg_from -> device;
+	memcpy((uint8_t *) msg_to, (uint8_t *) msg_from, sizeof(msg_t));
 }
 
 //发送一个中断
