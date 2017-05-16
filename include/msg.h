@@ -16,9 +16,12 @@ struct msg_t{
 	
 	int type;		//消息类型
 	int device;		//设备选择
+	
 	pid_t pid;		//消息主人
+	
 	uint8_t *buf;	//指向一段内存区域的指针
-	int buf_size;	//缓冲区大小
+	int cnt;		//缓冲区大小
+	uint32_t pos;	//用于硬盘读写位置定位
 
 }msg_t;
 

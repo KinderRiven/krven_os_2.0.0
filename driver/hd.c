@@ -30,7 +30,9 @@ static void wait_interrupt();
 
 static void init_hd();
 
-static void hd_rdwt(msg_t *msg);
+static void hd_read(msg_t *msg);
+
+static void hd_write(msg_t *msg);
 
 //根据设备的次设备号获得驱动号
 static void hd_open(int device);
@@ -49,6 +51,8 @@ static void print_part(hd_part_t *hd_part);
 
 //扇区16进制内容输出
 static void print_hdbuf_hex(int start, int size);
+
+//打印一段内存区域
 
 static void print_hdbuf_hex(int start, int size)
 {
@@ -110,8 +114,10 @@ void hd_task()
 		
 			//硬盘读写
 			case MSG_DEV_READ:
+				hd_read(&msg);
+				break;
 			case MSG_DEV_WRITE:
-				hd_rdwt(&msg);
+				hd_write(&msg);
 				break;			
 			//获得某一个分区信息
 			case MSG_DEV_INFO:
@@ -140,9 +146,76 @@ static void hd_info(msg_t *msg)
 			
 }
 
-static void hd_rdwt(msg_t *msg)
+static void hd_read(msg_t *msg)
 {
+	hd_cmd_t cmd;
+
+	uint32_t sector_no = msg -> pos;
+	int drive = msg -> device;	
+
+	//cmd.data
+	cmd.feature  = 0;
+	cmd.count 	 = (msg -> cnt + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	cmd.lba_low  = sector_no & 0xFF;
+	cmd.lba_mid  = (sector_no >> 8) & 0xFF;
+	cmd.lba_high = (sector_no >> 16) & 0xFF;
 	
+	//lba模式 
+	//lba = 1 (LBA mod)  
+	//drv = 0 
+	//lba_highest 
+	cmd.device = MAKE_DEVICE_REG(1, drive, (sector_no >> 24) & 0xF);
+
+	//Commnad
+	cmd.command = ATA_READ;
+
+	//进行硬盘操作
+	hd_cmd_out(&cmd);	
+
+	//等待硬盘数据准备
+	wait_interrupt();
+
+	port_read(REG_DATA, hdbuf, msg -> cnt);
+
+	//printf("[%d]\n", sector_no);
+	//print_hdbuf_hex(0, 32);
+
+	memcpy(msg -> buf, hdbuf, msg -> cnt);
+
+}
+
+static void hd_write(msg_t *msg)
+{
+	hd_cmd_t cmd;
+	
+	uint32_t sector_no = msg -> pos;
+	int drive = msg -> device;	
+
+	//cmd.data
+	cmd.feature  = 0;
+	cmd.count 	 = (msg -> cnt + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	cmd.lba_low  = sector_no & 0xFF;
+	cmd.lba_mid  = (sector_no >> 8) & 0xFF;
+	cmd.lba_high = (sector_no >> 16) & 0xFF;
+	
+	//lba模式 
+	//lba = 1 (LBA mod)  
+	//drv = 0 
+	//lba_highest 
+	cmd.device = MAKE_DEVICE_REG(1, drive, (sector_no >> 24) & 0xF);
+
+	//Commnad
+	cmd.command = ATA_WRITE;
+
+	//进行硬盘操作
+	hd_cmd_out(&cmd);	
+
+	//printf("%x %d\n", msg -> buf, msg -> cnt);
+
+	port_write(REG_DATA, msg -> buf, msg -> cnt);
+
+	// 写完发生一个中断
+	wait_interrupt();
 }
 
 //根据设别的次设别号获取驱动器号
@@ -344,3 +417,4 @@ static void wait_interrupt()
 	//接收一个来自磁盘的中断
 	recv_interrupt(hd_pid,	HD_INTERRUPT);
 }
+

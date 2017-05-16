@@ -44,7 +44,7 @@ port_write:
 	; -------- 
 
 	mov		edx, [esp + 4]		; port	
-	mov		edi, [esp + 8]		; buf
+	mov		esi, [esp + 8]		; buf
 	mov		ecx, [esp + 12]		; n
 
 	shr		ecx, 1				; n = n / 2

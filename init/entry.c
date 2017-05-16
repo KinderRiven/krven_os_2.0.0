@@ -151,7 +151,7 @@ void kern_init()
 	add_new_task(SYS_TASK, (uint32_t) hd_task);
 	
 	//#9 硬盘驱动测试进程
-	add_new_task(SYS_TASK, (uint32_t) mkfs);
+	add_new_task(SYS_TASK, (uint32_t) fs_task);
 		
 	//初始化进程
 	task_schedule();
