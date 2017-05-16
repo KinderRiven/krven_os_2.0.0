@@ -32,7 +32,7 @@ void write_to_hd(int pos)
 	send_message(fs_pid, hd_pid, &msg);
 
 	//这里应该等待一下
-	sleep(50);
+	sleep(10);
 }
 
 void fs_write(int sector_no, void *buf, int buf_size)

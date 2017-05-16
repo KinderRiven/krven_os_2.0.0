@@ -9,13 +9,15 @@
 
 pid_t fs_pid;
 
-static uint8_t to_mkfs = 1;
+//是否进行文件系统的安装
+static uint8_t to_mkfs = 0;
 
 static uint8_t install_sp = 1;
-static uint8_t install_imap = 0;
-static uint8_t install_smap = 0;
-static uint8_t install_inode = 0;
-static uint8_t install_root  = 0;
+static uint8_t install_imap = 1;
+static uint8_t install_smap = 1;
+static uint8_t install_inode = 1;
+static uint8_t install_root  = 1;
+
 
 uint32_t fs_root;
 uint8_t fs_buf[FS_BUF_SIZE];
@@ -24,11 +26,10 @@ super_block_t super_block;
 	
 static void fs_init();
 static void print_super_block(super_block_t *sp);
-static void fs_print_debug(void *, int);
 static void fs_print_sector(int sector_no, int num);
 static void fs_print_dir(dir_entry_t *);
 
-static void fs_print_debug(void *ptr, int num)
+void fs_print_debug(void *ptr, int num)
 {
 	int i;
 	uint8_t *p = ptr;
@@ -56,6 +57,11 @@ static void print_super_block(super_block_t *sp)
 	printf("[root_inode] : %6d\n", sp -> root_inode);
 }
 
+//初始化主要进行
+
+//1. 初始化硬盘
+//2. 获得分区表信息
+//3. 获得超级块
 static void fs_init()
 {
 	
@@ -69,8 +75,12 @@ static void fs_init()
 	
 	//打开设别指令
 	msg.type = MSG_DEV_OPEN;
+	
 	//次设备号为0
 	msg.device = 0;
+
+	//打印设别信息
+	msg.debug = 1;
 
 	//打开设备，进行硬盘信息初始化
 	send_message(pid, hd_pid, &msg);	
@@ -83,7 +93,9 @@ static void fs_init()
 	//获取分区信息
 	send_message(pid, hd_pid, &msg);
 	fs_root = hd_part.start_lba;
-	
+
+	fs_read(1, (void *)&super_block, sizeof(super_block));
+	print_super_block(&super_block);
 }
 
 static void fs_print_sector(int sector_no, int num)
@@ -121,6 +133,7 @@ static void fs_print_dir(dir_entry_t *dir)
 	}
 }
 
+
 void fs_task()
 {
 	fs_init();
@@ -142,6 +155,7 @@ void fs_task()
 	fs_read(super_block.first_data_sect, (void *)fs_buf, sizeof(fs_buf));	
 	fs_print_dir((dir_entry_t *) fs_buf);
 
+	mk_dir("v", 0);
 	while(1);	
 }
 
@@ -161,18 +175,18 @@ void mkfs()
 	*****************************/
 	
 	///////////////////////////// start  :  length
-	//        frist data	   // (3 + n + m) (x)
+	//        frist data	   // (14 + n) (x)
 	/////////////////////////////
-	//		  inodes		   // (3 + n) (m)
+	//		  inodes		   // 14 (n)
 	/////////////////////////////
-	//      sector map		   // 3 (n)
+	//      sector map		   // 03 (11)
 	/////////////////////////////
-	//		inode map		   // 2	(2)
+	//		inode map		   // 02 (1)
 	/////////////////////////////
-	//		Super Block		   // 1 (1)
+	//		Super Block		   // 01 (1)
 	///////////////////////////// 
 	//		Boot Sector	   	   // 0
-	/////////////////////////////
+	///////////////////////////// 
 
 
 	//标记为KOS操作系统
@@ -249,14 +263,15 @@ void mkfs()
 	if(install_smap){
 
 		printf("Start install sector map (3)\n");
-		memset(fs_buf, 0xFF, sizeof(fs_buf));
+		memset(fs_buf, 0, sizeof(fs_buf));
 		
 		for(i = 3, j = 1; i < 3 + super_block.smap_sects; i++)
 		{
 			printf("[%d / %d]\n", j++, super_block.smap_sects);
 			fs_write(i, (void *)fs_buf, sizeof(fs_buf));		
 		}
-	
+		
+		update_sector_map(0, super_block.first_data_sect);		
 	}
 	
 	/*****************************
@@ -278,7 +293,14 @@ void mkfs()
 		}
 	}
 
-	
+
+
+	/*****************************
+   	**                          **
+	** 	 	 Root   Dir	    	**
+    **                          **
+	*****************************/
+
 	//1 + 1 + imap + smap + inum
 	if(install_root){
 
@@ -293,7 +315,7 @@ void mkfs()
 		char name[10] = "/";
 		root_dir -> inode_id = 1;
 
-		memcpy(root_dir -> name, name, sizeof(char) * strlen(name));	
+		memcpy((uint8_t *)root_dir -> name, (uint8_t*)name, sizeof(char) * strlen(name));	
 
 		//fs_print_debug((void *) fs_buf, 32);
 

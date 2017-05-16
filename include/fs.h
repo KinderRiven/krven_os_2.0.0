@@ -30,7 +30,7 @@ struct super_block_t
 } super_block_t;
 
 
-//size = 16
+//size = 32
 typedef
 struct inode_t
 {
@@ -38,6 +38,11 @@ struct inode_t
 	uint32_t size;			//文件大小
 	uint32_t start_sect;	//开始扇区
 	uint32_t sect_num;		//所占扇区数	
+	uint32_t type;			//文件类型
+	
+	uint32_t v1;			//保留
+	uint32_t v2;
+	uint32_t v3;
 
 } inode_t;
 
@@ -63,7 +68,16 @@ void fs_read(int sector_no, void *buf, int buf_size);
 
 extern pid_t fs_pid;
 extern uint32_t fs_root;
+extern super_block_t super_block;
 
 void fs_task();
+void mk_file(char name[], int size, int mode);
+void mk_dir(char name[], int mode);
+
+void fs_print_debug(void *, int);
+
+void update_sector_map(uint32_t, uint32_t);
 
 #endif
+
+

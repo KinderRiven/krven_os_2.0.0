@@ -17,6 +17,8 @@ struct msg_t{
 	int type;		//消息类型
 	int device;		//设备选择
 	
+	int debug;		//debug信息是否打印
+	
 	pid_t pid;		//消息主人
 	
 	uint8_t *buf;	//指向一段内存区域的指针

@@ -35,7 +35,7 @@ static void hd_read(msg_t *msg);
 static void hd_write(msg_t *msg);
 
 //根据设备的次设备号获得驱动号
-static void hd_open(int device);
+static void hd_open(msg_t *msg);
 
 static void hd_info(msg_t *msg);
 
@@ -109,7 +109,7 @@ void hd_task()
 			//设备开启
 			//用于获得硬盘信息和分区信息
 			case MSG_DEV_OPEN:
-				hd_open(msg.device);
+				hd_open(&msg);
 				break;
 		
 			//硬盘读写
@@ -219,15 +219,21 @@ static void hd_write(msg_t *msg)
 }
 
 //根据设别的次设别号获取驱动器号
-static void hd_open(int device)
+static void hd_open(msg_t *msg)
 {
 	//只有一块硬盘
 	//获取硬盘信息
-	hd_identify(0);	
+	if(msg -> debug){
+		hd_identify(0);	
+	}
 
 	//获得分区信息
 	hd_get_part_table(0, 0, 0);
-	hd_print_part();	
+
+	//需要打印调试信息的话
+	if(msg -> debug){
+		hd_print_part();
+	}	
 
 }
 
