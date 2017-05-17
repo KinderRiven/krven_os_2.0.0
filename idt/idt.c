@@ -135,10 +135,10 @@ void init_idt(){
 	idt_set_gate(47, (uint32_t)irq15,KERNEL_CS_INDEX, TYPE_386IGate | DPL_0);
 
 	//系统调用
-	idt_set_gate(48, (uint32_t)sys_call, KERNEL_CS_INDEX, TYPE_386IGate | DPL_1);
+	idt_set_gate(48, (uint32_t)sys_call, KERNEL_CS_INDEX, TYPE_386IGate | DPL_3);
 	
 	// 255 将来用于实现系统调用
-	idt_set_gate(255, (uint32_t)isr255, KERNEL_CS_INDEX, TYPE_386IGate | DPL_1);
+	idt_set_gate(255, (uint32_t)isr255, KERNEL_CS_INDEX, TYPE_386IGate | DPL_3);
 
 
 	// 更新设置中断描述符表

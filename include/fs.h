@@ -10,9 +10,12 @@
 
 #define KOS_FS_LV1 0x6666
 
-#define FOLDER_SIZE		8192
+#define FOLDER_SIZE		1024
 #define INODE_MAX_NUM 	4096
 #define FS_BUF_SIZE		512
+
+#define FS_TYPE_FILE	1
+#define FS_TYPE_FOLDER	2
 
 //一个超级块对应一个文件系统
 typedef 
@@ -39,9 +42,9 @@ struct inode_t
 	uint32_t size;			//文件大小
 	uint32_t start_sect;	//开始扇区
 	uint32_t sect_num;		//所占扇区数	
-	uint32_t type;			//文件类型
 	
-	uint32_t v1;			//保留
+	uint32_t v0;			//保留
+	uint32_t v1;			
 	uint32_t v2;
 	uint32_t v3;
 
@@ -50,11 +53,19 @@ struct inode_t
 typedef
 struct dir_entry_t
 {
-	
+	//4	
 	uint32_t inode_id;
+	
+	//24
 	char name[MAX_FILENAME];	
 	
+	//4
+	uint32_t type;
+	
 } dir_entry_t;
+
+// 1024 / 32 = 32
+#define MAX_DIR_ENTRIES_NUM (FOLDER_SIZE / sizeof(dir_entry_t))
 
 //fs.c
 extern pid_t fs_pid;
@@ -85,6 +96,9 @@ int mk_inode(int size, int mode);
 inode_t find_inode(int inode_id);
 
 void add_dir_entry(int, dir_entry_t *);
+
+//opt.c
+void get_dir_entries(msg_t *msg);
 
 #endif
 

@@ -13,6 +13,8 @@
 //终端窗口
 tty_t tty[TTY_NUMBER];
 
+pid_t tty_pid;
+
 uint8_t current_tty = 0;
 
 static void tty_print_header(uint8_t num);
@@ -137,6 +139,9 @@ void init_tty()
 {
 	int i;	
 	
+	//获得tty进程的pid
+	get_proc_pid(&tty_pid);	
+	
 	for(i = TTY_NUMBER - 1; i >= 0; i--)
 	{
 		tty[i].buf_size = 0;	
@@ -148,6 +153,8 @@ void init_tty()
 		tty_print_header(i);
 		console_copy_to(tty[i].console_buffer.video_memory, &tty[i].console_buffer.cursor_x, &tty[i].console_buffer.cursor_y);	
 	}
+	
 	current_tty = 0;
 	tty_switch(current_tty);
+
 }

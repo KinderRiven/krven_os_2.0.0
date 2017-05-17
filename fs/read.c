@@ -29,8 +29,10 @@ void read_from_hd(int pos)
 
 	//拷贝内容到缓冲区
 	send_message(fs_pid, hd_pid, &msg);
+
+	//等待一个消息完成信号
+	recv_message(hd_pid, fs_pid, &msg);
 	
-	sleep(50);
 }
 
 void fs_read(int sector_no, void *buf, int buf_size)
@@ -45,3 +47,5 @@ void fs_read(int sector_no, void *buf, int buf_size)
 	
 	rd_lock--;
 }
+
+

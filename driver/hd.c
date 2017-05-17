@@ -176,10 +176,11 @@ static void hd_read(msg_t *msg)
 	wait_interrupt();
 
 	port_read(REG_DATA, hdbuf, msg -> cnt);
-
-	//printf("[%d]\n", sector_no);
-	//print_hdbuf_hex(0, 32);
 	memcpy(msg -> buf, hdbuf, msg -> cnt);
+
+	//发送一个read完成的的消息	
+	msg_t finish_msg;
+	send_message(hd_pid, msg -> pid, &finish_msg); 
 
 }
 
@@ -213,8 +214,12 @@ static void hd_write(msg_t *msg)
 
 	port_write(REG_DATA, msg -> buf, msg -> cnt);
 
-	// 写完发生一个中断
+	//写完发生一个中断
 	wait_interrupt();
+
+	//发送一个结束消息
+	msg_t finish_msg;
+	send_message(hd_pid, msg -> pid, &finish_msg); 
 }
 
 //根据设别的次设别号获取驱动器号

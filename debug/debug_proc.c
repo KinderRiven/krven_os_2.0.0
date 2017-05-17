@@ -22,6 +22,7 @@ void debug_user_task()
 	uint8_t byte = 'A';
 	while(1){
 		debug_print_right(byte);	
+		printf("Hello World!\n");
 		sleep(100);
 	}
 }

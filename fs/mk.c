@@ -119,7 +119,7 @@ static int inode_alloc_sector(inode_t *inode)
 	int num = 0;
 	
 	//从哪里开始有空位
-	int start = -1;
+	int start;
 	
 	//已经有多少个空位了
 	int cnt = 0;
@@ -243,6 +243,7 @@ static int get_new_inode()
 
 
 //为文件/文件夹建立inode节点
+//8192 / 4096 = 2
 int mk_inode(int size, int mode)
 {
 	int id;
@@ -254,7 +255,7 @@ int mk_inode(int size, int mode)
 	//size
 	//sect_num
 	inode.size = size; 							// B
-	inode.sect_num = size / SECTOR_SIZE + 1;	// 10
+	inode.sect_num = size / SECTOR_SIZE;		// 10
 	
 	//分配空闲扇区
 	//start_sect
@@ -357,8 +358,9 @@ int mk_file(char name[], int size, int mode, int dir)
 	dir_entry_t dir_entry;
 
 	//添加目录项
-	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, sizeof(name));
-	dir_entry.inode_id = inode_id;	
+	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, strlen(name));
+	dir_entry.inode_id = inode_id;
+	dir_entry.type = FS_TYPE_FILE;	
 
 	add_dir_entry(dir, &dir_entry);
 	
@@ -375,14 +377,16 @@ int mk_dir(char name[], int mode, int dir)
 	char up[] = ".";
 
 	//添加上级目录项
-	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, sizeof(name));
+	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, strlen(name));
 	dir_entry.inode_id = inode_id;	
+	dir_entry.type = FS_TYPE_FOLDER;
 
 	add_dir_entry(dir, &dir_entry);
 
 	//添加目录项	
-	memcpy((uint8_t *) dir_entry.name, (uint8_t *) up, sizeof(up));
-	dir_entry.inode_id = dir;	
+	memcpy((uint8_t *) dir_entry.name, (uint8_t *) up, strlen(up));
+	dir_entry.inode_id = dir;
+	dir_entry.type = FS_TYPE_FOLDER;	
 	
 	add_dir_entry(inode_id, &dir_entry);
 

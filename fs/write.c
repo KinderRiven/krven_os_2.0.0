@@ -9,7 +9,6 @@ static int wt_lock = 0;
 //写操作
 void write_to_hd(int pos)
 {
-
 	msg_t msg;
 
 	msg.pid = fs_pid;
@@ -31,8 +30,9 @@ void write_to_hd(int pos)
 
 	send_message(fs_pid, hd_pid, &msg);
 
-	//这里应该等待一下
-	sleep(10);
+	//等待一个传输成功标志
+	recv_message(hd_pid, fs_pid, &msg);		
+	
 }
 
 void fs_write(int sector_no, void *buf, int buf_size)

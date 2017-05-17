@@ -90,7 +90,7 @@ static void fs_init()
 	msg.device = 0;
 
 	//打印设别信息
-	msg.debug = 1;
+	msg.debug = 0;
 
 	//打开设备，进行硬盘信息初始化
 	send_message(pid, hd_pid, &msg);	
@@ -105,7 +105,9 @@ static void fs_init()
 	fs_root = hd_part.start_lba;
 
 	fs_read(1, (void *)&super_block, sizeof(super_block));
-	print_super_block(&super_block);
+	
+	if(msg.debug)
+		print_super_block(&super_block);
 }
 
 static void fs_print_sector(int sector_no, int num)
@@ -163,6 +165,12 @@ static void fs_print_dir(int inode_id)
 
 void fs_task()
 {
+
+	//等待以下
+	sleep(100);
+
+	msg_t msg;
+
 	fs_init();
 
 	if(to_mkfs)
@@ -183,9 +191,9 @@ void fs_task()
 	//fs_print_dir((dir_entry_t *) fs_buf);
 
 	//新建根目录
-	//mk_file("v1", 1024, 0, 1);
-	//mk_file("C program", 1024, 0, 1);
-	//mk_file("zxc", 1024, 0, 1);
+	//mk_file("hello.txt", 1024, 0, super_block.root_inode);
+	//mk_file("a.img", 1024, 0, super_block.root_inode);
+	//mk_file("b.cpp", 1024, 0, super_block.root_inode);
 	
 	//for(i = 10; i < 30; i++)
 	//	find_inode(i);
@@ -194,9 +202,22 @@ void fs_task()
 	//mk_file("yy.cpp", 512, 0, super_block.root_inode);
 	//mk_file("os.txt", 6666, 0, super_block.root_inode);
 
-	fs_print_dir(super_block.root_inode);
+	//fs_print_dir(super_block.root_inode);
 
-	while(1);	
+	while(1)
+	{
+		recv_message(ANY, fs_pid, &msg);
+	
+		switch(msg.type)
+		{
+			case MSG_FS_DIR:
+				get_dir_entries(&msg);
+				break;		
+			default:
+				printf("File System code error!");
+				break;
+		}
+	}	
 }
 
 //建立文件系统
@@ -351,11 +372,12 @@ static void mkfs()
 	
 		//建立根目录
 		int root_dir_inode_id = mk_inode(FOLDER_SIZE, 0);
-		printf("Root inode-id is : %d\n", root_dir_inode_id);
+		printf("Root dir id is : %d\n", root_dir_inode_id);
+		
 		dir_entry_t root_entry;
 		
 		char name[] = ".";
-		root_entry.inode_id = 1;	
+		root_entry.inode_id = root_dir_inode_id;	
 		memcpy((uint8_t *) root_entry.name, (uint8_t *) name, sizeof(name));	
 	
 		//添加目录项	
