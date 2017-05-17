@@ -10,6 +10,7 @@
 
 #define KOS_FS_LV1 0x6666
 
+#define FOLDER_SIZE		8192
 #define INODE_MAX_NUM 	4096
 #define FS_BUF_SIZE		512
 
@@ -55,28 +56,35 @@ struct dir_entry_t
 	
 } dir_entry_t;
 
-
-void mkfs();
-
-extern uint8_t fs_buf[FS_BUF_SIZE];
-
-void write_to_hd(int pos);
-void read_from_hd(int pos);
-
-void fs_write(int sector_no, void *buf, int buf_size);
-void fs_read(int sector_no, void *buf, int buf_size);
-
+//fs.c
 extern pid_t fs_pid;
 extern uint32_t fs_root;
 extern super_block_t super_block;
 
 void fs_task();
-void mk_file(char name[], int size, int mode);
-void mk_dir(char name[], int mode);
-
 void fs_print_debug(void *, int);
 
-void update_sector_map(uint32_t, uint32_t);
+//write.c
+void write_to_hd(int pos);
+void fs_write(int sector_no, void *buf, int buf_size);
+
+//read.c
+void read_from_hd(int pos);
+void fs_read(int sector_no, void *buf, int buf_size);
+
+//mk.c
+int mk_file(char name[], int size, int mode, int dir);
+int mk_dir(char name[], int mode, int dir);
+
+int update_sector_map(uint32_t, uint32_t);
+
+//建立一个新的inode节点，返回inode id
+int mk_inode(int size, int mode);
+
+//根据inode_id找到inode array的内容
+inode_t find_inode(int inode_id);
+
+void add_dir_entry(int, dir_entry_t *);
 
 #endif
 

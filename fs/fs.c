@@ -23,11 +23,21 @@ uint32_t fs_root;
 uint8_t fs_buf[FS_BUF_SIZE];
 hd_part_t hd_part;
 super_block_t super_block;
-	
+
+//安装文件系统
+static void mkfs();
+
+//fs初始化	
 static void fs_init();
+
+//按超级块内容格式打印内容
 static void print_super_block(super_block_t *sp);
+
+//打印扇区内容（num个字节）
 static void fs_print_sector(int sector_no, int num);
-static void fs_print_dir(dir_entry_t *);
+
+//打印dir目录
+static void fs_print_dir(int);
 
 void fs_print_debug(void *ptr, int num)
 {
@@ -114,22 +124,39 @@ static void fs_print_sector(int sector_no, int num)
 
 }
 
-static void fs_print_dir(dir_entry_t *dir)
+//打印目录
+static void fs_print_dir(int inode_id)
 {
-	int i = 0;
-	dir_entry_t *tmp = dir;
+	inode_t inode = find_inode(inode_id);
+
+	int start_sector = inode.start_sect;
+	int sector_num = inode.sect_num;
+
+	//printf("[%d %d]\n", start_sector, sector_num);	
 	
-	for(i = 0; ; i++)
+	int i, j;
+	int pre_sector_entry_size = SECTOR_SIZE / sizeof(dir_entry_t);
+	dir_entry_t *ptr;
+
+	//读一个扇区的目录项
+	for(i = start_sector; i < start_sector + sector_num; i++)
 	{
-		if(tmp -> inode_id == 0)
-			break;
+		fs_read(i, (void *) fs_buf, sizeof(fs_buf));
+		ptr = (dir_entry_t *) fs_buf;
 		
-		else{
-			printf("[id]   : %d\n", tmp -> inode_id);
-			printf("[name] : %s", tmp -> name);
-			printf("\n");
+		for(j = 0; j < pre_sector_entry_size; j++){
+			//目录项为空
+			if(ptr -> inode_id == 0){
+				return;
+			}
+			else{
+				printf("[name]  : %s",  ptr -> name);
+				printf(" ");
+				printf("[inode] : %d\n", ptr -> inode_id);
+			}
+			ptr++;
 		}
-		tmp++;
+		
 	}
 }
 
@@ -152,15 +179,28 @@ void fs_task()
 	//	fs_print_sector(i, 32);
 	//}
 
-	fs_read(super_block.first_data_sect, (void *)fs_buf, sizeof(fs_buf));	
-	fs_print_dir((dir_entry_t *) fs_buf);
+	//fs_read(super_block.first_data_sect, (void *)fs_buf, sizeof(fs_buf));	
+	//fs_print_dir((dir_entry_t *) fs_buf);
 
-	mk_dir("v", 0);
+	//新建根目录
+	//mk_file("v1", 1024, 0, 1);
+	//mk_file("C program", 1024, 0, 1);
+	//mk_file("zxc", 1024, 0, 1);
+	
+	//for(i = 10; i < 30; i++)
+	//	find_inode(i);
+
+	//mk_file("hello.cpp", 4096, 0, super_block.root_inode);
+	//mk_file("yy.cpp", 512, 0, super_block.root_inode);
+	//mk_file("os.txt", 6666, 0, super_block.root_inode);
+
+	fs_print_dir(super_block.root_inode);
+
 	while(1);	
 }
 
 //建立文件系统
-void mkfs()
+static void mkfs()
 {
 
 	sleep(50);
@@ -247,7 +287,7 @@ void mkfs()
 
 		//inode的使用情况
 		//1 is root dir
-		for(i = 0; i < 2; i++){
+		for(i = 0; i < 1; i++){
 			fs_buf[0] |= (1 << i);	
 		}
 
@@ -308,19 +348,17 @@ void mkfs()
 	
 		printf("Start isntall root (%d - %d)\n", super_block.first_data_sect, 
 				3 + super_block.smap_sects + super_block.inode_sects);
+	
+		//建立根目录
+		int root_dir_inode_id = mk_inode(FOLDER_SIZE, 0);
+		printf("Root inode-id is : %d\n", root_dir_inode_id);
+		dir_entry_t root_entry;
 		
-		dir_entry_t *root_dir = (dir_entry_t *) fs_buf;
-		
-		//根目录
-		char name[10] = "/";
-		root_dir -> inode_id = 1;
-
-		memcpy((uint8_t *)root_dir -> name, (uint8_t*)name, sizeof(char) * strlen(name));	
-
-		//fs_print_debug((void *) fs_buf, 32);
-
-		fs_write(super_block.first_data_sect, (void *)fs_buf, sizeof(fs_buf));
-		
-		//fs_print_sector(super_block.first_data_sect, 32);	
+		char name[] = ".";
+		root_entry.inode_id = 1;	
+		memcpy((uint8_t *) root_entry.name, (uint8_t *) name, sizeof(name));	
+	
+		//添加目录项	
+		add_dir_entry(root_dir_inode_id, &root_entry);	
 	}
 }

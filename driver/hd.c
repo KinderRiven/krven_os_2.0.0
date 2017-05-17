@@ -179,7 +179,6 @@ static void hd_read(msg_t *msg)
 
 	//printf("[%d]\n", sector_no);
 	//print_hdbuf_hex(0, 32);
-
 	memcpy(msg -> buf, hdbuf, msg -> cnt);
 
 }

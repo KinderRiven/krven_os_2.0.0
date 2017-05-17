@@ -18,6 +18,7 @@ struct msg_t{
 	int device;		//设备选择
 	
 	int debug;		//debug信息是否打印
+	//int lock;		//消息锁
 	
 	pid_t pid;		//消息主人
 	
