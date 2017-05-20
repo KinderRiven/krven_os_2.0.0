@@ -54,6 +54,12 @@ void init_shell()
 	set_shell_handler("ldt", shell_show_ldt);
 
 	set_shell_handler("alloc", shell_pmm_alloc);
+
+	set_shell_handler("fork", shell_fork);
+
+	set_shell_handler("proc", shell_show_proc);
+
+	set_shell_handler("kill", shell_kill_proc);
 }
 
 

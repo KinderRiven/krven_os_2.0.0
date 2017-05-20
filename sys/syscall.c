@@ -8,13 +8,22 @@ void init_sys_call()
 {
 	//1.查看内存中进程数量的系统调用
 	set_sys_call(SYS_PROC_NUM, (uint32_t) sys_get_proc_num);
+	
 	//2.清屏
 	set_sys_call(SYS_WRITE_CLEAR, (uint32_t) sys_write_clear);
+
+	//3.进程退出
+	set_sys_call(SYS_EXIT, (uint32_t) sys_exit);
 	
 	//51.内核打印函数
 	set_sys_call(SYS_WRITE, (uint32_t) sys_write);
+	
+	//52.获取进程ID
 	set_sys_call(SYS_PROC_PID, (uint32_t) sys_get_proc_pid);
 
+	//53杀死进程
+	set_sys_call(SYS_KILL, (uint32_t) sys_kill);
+	
 	//102.发送中断
 	set_sys_call(SYS_SEND_INT, (uint32_t) sys_send_interrupt);
 	

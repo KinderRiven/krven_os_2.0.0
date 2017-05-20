@@ -51,7 +51,16 @@ recv_interrupt:
 	ret
 
 
+[GLOBAL exit]
+exit:
+	push	dword SYS_EXIT
+	int		SYS_INT_NO
+	add		esp, 4
+	ret
 
-
-
-
+[GLOBAL kill]
+kill:
+	push	dword SYS_KILL
+	int		SYS_INT_NO
+	add		esp, 4
+	ret

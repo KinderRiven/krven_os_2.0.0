@@ -82,9 +82,9 @@ static void fs_init()
 {
 	
 	msg_t msg;
-	pid_t pid;
 
-	get_proc_pid(&pid);
+	//pid_t pid;
+	//get_proc_pid(&pid);
 	
 	//打开设别指令
 	msg.type = MSG_DEV_OPEN;
@@ -96,7 +96,7 @@ static void fs_init()
 	msg.debug = 0;
 
 	//打开设备，进行硬盘信息初始化
-	send_message(pid, hd_pid, &msg);	
+	send_message(fs_pid, hd_pid, &msg);	
 	
 	//获取分区信息
 	msg.type = MSG_DEV_INFO;
@@ -104,7 +104,7 @@ static void fs_init()
 	msg.buf = (uint8_t *) &hd_part;
 
 	//获取分区信息
-	send_message(pid, hd_pid, &msg);
+	send_message(fs_pid, hd_pid, &msg);
 	fs_root = hd_part.start_lba;
 
 	fs_read(1, (void *)&super_block, sizeof(super_block));

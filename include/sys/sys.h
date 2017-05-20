@@ -16,11 +16,18 @@
 //物理内存占用情况
 #define SYS_PMM_USED 3
 
+//程序退出
+#define SYS_EXIT 4
+
 //单参调用
 //write
 #define SYS_WRITE 51
+
 //获得进程ID号
 #define SYS_PROC_PID 52
+
+//杀死一个进程
+#define SYS_KILL 53
 
 //双参调用
 #define SYS_ALERT_WRITE_COLOR 101

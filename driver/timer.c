@@ -7,7 +7,7 @@
 void clock_handler(){
 
 	//任务调度	
-	//task_schedule();
+	task_schedule();
 	
 	//进程调度 
 	proc_schedule();

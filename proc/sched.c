@@ -1,5 +1,7 @@
 #include "sched.h"
+#include "mm.h"
 #include "hd.h"
+#include "tty.h"
 #include "fs.h"
 #include "string.h"
 #include "proc.h"
@@ -34,11 +36,11 @@ void proc_schedule()
 		//不调度发生阻塞的程序
 		//不调度空的进程块
 		if(current_proc -> msg_block != 1 && current_proc -> take_up != 0){
-			task_table[current_proc -> tid].status = 1;
+			current_proc -> status = PROC_RUNNING;
 			break;
 		}
-		else{
-			task_table[current_proc -> tid].status = 2;
+		else if(current_proc -> msg_block == 1){
+			current_proc -> status = PROC_BLOCK;
 		}
 	}
 }
@@ -49,28 +51,25 @@ void task_schedule()
 
 	int i = 0;
 
+	//扫一次任务表
 	for(i = 0; i < task_size; i++)
 	{
+		//如果任务正在等待
 		if(task_table[i].status == TASK_WAITING)
 		{
-					//如果是初始化进程
+			//如果是初始化进程
 			if(strcmp(task_table[i].name, "INIT") == 0)
 			{
-				task_table[i].status = TASK_RUNNING;
 				task_table[i].pid = new_init_proc((uint32_t) task_table[i].entry);	
 			}
 			//如果是非初始化进程
 			else{
 
-				//转入调度
-				task_table[i].status = TASK_RUNNING;
-				
 				//创建系统进程	
 				if(task_table[i].level == SYS_TASK)
 				{
 					//为proc和task建立双向映射
 					task_table[i].pid = new_task_proc((uint32_t) task_table[i].entry);
-					procs[task_table[i].pid].tid = task_table[i].tid;
 					
 					if(strcmp(task_table[i].name, "HD") == 0)
 					{
@@ -80,14 +79,31 @@ void task_schedule()
 					{
 						fs_pid = task_table[i].pid;
 					}
-	
+					else if(strcmp(task_table[i].name, "TTY") == 0)
+					{
+						tty_pid = task_table[i].pid;	
+					}
+					else if(strcmp(task_table[i].name, "") == 0)
+					{
+						mm_pid = task_table[i].pid;
+					}
 				}
 				//创建用户进程
 				else if(task_table[i].level == USER_TASK)
 				{
 					task_table[i].pid = new_user_proc((uint32_t) task_table[i].entry);
-					procs[task_table[i].pid].tid = task_table[i].tid;
 				}
+			}
+		
+			if(task_table[i].pid != -1)
+			{	
+				//转入调度
+				task_table[i].status = TASK_RUNNING;
+				
+				//复制一些内容，名称、优先级等信息
+				strcpy(procs[task_table[i].pid].name, task_table[i].name);	
+				procs[task_table[i].pid].tid = task_table[i].tid;	
+				procs[task_table[i].pid].level = task_table[i].level;
 			}
 		}
 	}	

@@ -7,11 +7,12 @@
 
 #define LDT_SIZE 2
 #define PROC_STACK_SIZE 8192
-#define PROC_MAX_NUM 11
+#define PROC_MAX_NUM 10
 #define MAX_PROC_NAME 24
 
 #define ANY -1
 #define PROC_DEBUG 0
+#define PROC_TABLE_FULL -1
 
 #define HD_INTERRUPT 0xFFFF
 
@@ -54,6 +55,24 @@ struct proc_regs_t{
 
 } proc_regs_t;
 
+typedef 
+enum proc_level
+{
+	KERNEL_PROC = 0,
+	SYS_PROC = 1,
+	USER_PROC = 3
+
+} proc_level;
+
+typedef
+enum proc_status
+{
+	PROC_EXIT = 0,
+	PROC_RUNNING = 1,
+	PROC_BLOCK = 2
+
+} proc_status;
+
 typedef
 struct proc_t{
 	
@@ -79,6 +98,8 @@ struct proc_t{
 	struct proc_t *msg_next;			//链表指针	
 
 	int take_up;						//进程表是否为空
+	proc_level level;					//进程等级
+	proc_status status;					//进程状态
 	
 }proc_t;
 
@@ -91,8 +112,14 @@ extern char proc_stack[PROC_MAX_NUM][PROC_STACK_SIZE];
 //正在运行的进程数量
 extern int proc_count;
 
+//现实当前内存中运行的进程表
+void show_proc_table();
+
 //初始化进程表
 void init_proc_table();
+
+//获得一个新的进程块
+int get_empty_proc_block();
 
 //新建一个权限级为1的进程
 pid_t new_task_proc(uint32_t fun);

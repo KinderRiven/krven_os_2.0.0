@@ -29,6 +29,8 @@ enum color{
 //清屏函数
 void console_clear();
 
+void console_error();
+
 //打印一个字符
 void console_putc_color(char c, c_color_t bg, c_color_t font);
 

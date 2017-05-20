@@ -1,3 +1,5 @@
+#include "string.h"
+#include "sys.h"
 #include "stdio.h"
 #include "pmm.h"
 #include "vmm.h"
@@ -9,6 +11,9 @@ pid_t mm_pid;
 
 //初始化
 static void mm_init();
+
+//开始fork
+static void do_fork();
 
 static void mm_init()
 {
@@ -36,7 +41,15 @@ void mm_task()
 	}
 }
 
-void do_fork()
+void do_fork(msg_t *msg)
 {
-		
+	//获得一个空的进程块
+	//int idx = get_empty_proc_block();	
+	
+	//获得父进程的内存块
+	//int fpid = msg -> pid;
+	
+	//原封不动的拷贝内容
+	//memcpy((uint8_t *)&procs[idx], (uint8_t *)&procs[fpid], sizeof(procs[fpid]));
+
 }

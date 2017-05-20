@@ -39,6 +39,24 @@ void console_clear(){
 	move_cursor();
 }
 
+void console_error()
+{
+	int i;	
+	uint8_t bg_color = (uint8_t)c_blue;
+	uint8_t font_color = (uint8_t)c_blue;
+
+	uint8_t attribute_byte = (bg_color << 4) | (font_color & 0x0F);
+	uint16_t attribute = attribute_byte << 8;
+
+	for(i = 0; i < 80 * 25; i++){
+		video_memory[i] = 0x20 | attribute;
+	}
+	
+	cursor_x = 0;
+	cursor_y = 0;
+	move_cursor();
+}
+
 static void scroll(){
 
 	uint8_t attribute_byte = (0 << 4) | (15 & 0x0F);
@@ -79,7 +97,7 @@ void console_putc_color(char c, c_color_t bg, c_color_t font)
 		cursor_x = 0;
 		cursor_y++;
 	} else if (c >= ' ') {
-		video_memory[cursor_y*80 + cursor_x] = c | attribute;
+		video_memory[cursor_y * 80 + cursor_x] = c | attribute;
 		cursor_x++;
 	}
 

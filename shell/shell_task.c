@@ -22,3 +22,16 @@ void shell_show_ldt(void *args, tty_t *tty)
 
 	proc_print_ldt(num);  
 }
+
+void shell_show_proc(void *args, tty_t *tty)
+{
+	show_proc_table();
+}
+
+void shell_kill_proc(void *args, tty_t *tty)
+{
+	char (*name)[SHELL_PARAM_SIZE] = args;
+	uint32_t num = cstr_to_uint32(name[1]);
+
+	kill((pid_t) num);	
+}

@@ -1,4 +1,5 @@
 #include "proc.h"
+#include "string.h"
 #include "gdt.h"
 #include "stdio.h"
 #include "ldt.h"
@@ -12,8 +13,6 @@ proc_t procs[PROC_MAX_NUM];
 //进程栈
 char proc_stack[PROC_MAX_NUM][PROC_STACK_SIZE];
 
-//获得一个空的进程表
-static int get_empty_proc_block();
 
 //进程数量
 int proc_count = 0;
@@ -80,7 +79,7 @@ void init_proc_table()
 	}		
 }
 
-static int get_empty_proc_block()
+int get_empty_proc_block()
 {
 	int i;
 	
@@ -105,6 +104,10 @@ pid_t new_init_proc(uint32_t fun)
 	//uint32_t limit = get_kernel_mm();
 
 	int idx = get_empty_proc_block();
+
+	//进程表已经满了
+	if(idx == PROC_TABLE_FULL)
+		return -1;
 
 	//代码段CS
 	ldt_set_descriptor(&procs[idx].ldts[0], 0, 0xFFFFFFFF, //limit, 
@@ -157,6 +160,10 @@ pid_t new_task_proc(uint32_t fun)
 
 	//获得一个空的进程块
 	int idx = get_empty_proc_block();
+	
+	//进程表已经满了
+	if(idx == PROC_TABLE_FULL)
+		return -1;
 
 	//建立进程的LDT (修改DPL在低权限下运行)
 	//代码段CS
@@ -211,6 +218,9 @@ pid_t new_user_proc(uint32_t fun)
 	//获得一个空的进程控制块	
 	int idx = get_empty_proc_block();
 
+	if(idx == PROC_TABLE_FULL)
+		return -1;
+
 	//建立进程的LDT (修改DPL在低权限下运行)
 	
 	//代码段CS
@@ -252,6 +262,66 @@ pid_t new_user_proc(uint32_t fun)
 	procs[idx].pid = idx;
 	
 	return idx;
+}
+
+//表头
+static char table_header[10][10] = {"TID", "PID", "LEVEL", "STATUS", "NAME"}; 
+
+void show_proc_table()
+{
+	int i, j, line_width = 10;
+	for(i = 0; i < 5; i++)
+	{
+		printc(c_black, c_light_magenta, "%s", table_header[i]);
+		for(j = 0; j < line_width - strlen(table_header[i]); j++)
+			printf(" ");
+	}
+	printf("\n");
+	
+	for(i = 0; i < PROC_MAX_NUM; i++)
+	{
+		//一个进程代表一个进程块	
+		if(procs[i].take_up == 1){
+			
+			printc(c_black, c_light_red, "%-10d%-10d", procs[i].tid, procs[i].pid);
+			
+			switch(procs[i].level)
+			{	
+				case KERNEL_PROC: 
+					printc(c_black, c_red, "KERENL    ");	
+					break;
+				case SYS_PROC:
+					printc(c_black, c_cyan, "SYS       ");
+					break;
+				case USER_PROC:
+					printc(c_black, c_magenta, "USER      ");
+					break;
+				default:
+					printf(c_black, c_light_red, "ERROR     ");
+					break;	
+			}
+		
+			switch(procs[i].status)
+			{	
+				case PROC_EXIT: 
+					printc(c_black, c_red, "STOP      ");	
+					break;
+				case PROC_RUNNING:
+					printc(c_black, c_green, "RUNNING   ");
+					break;
+				case PROC_BLOCK:
+					printc(c_black, c_light_brown, "WAITING   ");
+					break;
+				default:
+					printf("ERROR     ");
+					break;	
+			}
+		
+			printc(c_black, c_cyan, "%s", procs[i].name);
+			printf("\n");
+		
+		}
+	}
 }
 
 static void debug_proc(proc_t *proc){

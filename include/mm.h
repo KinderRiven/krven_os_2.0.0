@@ -5,6 +5,8 @@
 
 void mm_task();
 
+int fork();
+
 extern pid_t mm_pid;
 
 #endif

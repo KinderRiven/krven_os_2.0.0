@@ -137,9 +137,6 @@ void init_tty()
 	int i;	
 	char root_name[] = "/";
 	
-	//获得tty进程的pid
-	get_proc_pid(&tty_pid);	
-	
 	for(i = TTY_NUMBER - 1; i >= 0; i--)
 	{
 

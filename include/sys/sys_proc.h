@@ -1,6 +1,7 @@
 #ifndef INCLUDE_SYS_CALL_PROC_H_
 #define INCLUDE_SYS_CALL_PROC_H_
 
+#include "types.h"
 #include "proc.h"
 
 //#1
@@ -8,10 +9,17 @@
 void sys_get_proc_num();
 void get_proc_num();
 
+//#4
+void sys_exit();
+void exit();
+
 //#52
 //获得进程的系统调用号
 void sys_get_proc_pid(pid_t *pid);
 void get_proc_pid(pid_t *pid);
+
+void sys_kill(pid_t pid);
+void kill(pid_t pid);
 
 //#102 发送中断
 void send_interrupt(pid_t pid, int interrupt_id);

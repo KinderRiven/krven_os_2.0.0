@@ -39,7 +39,7 @@ tid_t add_new_task(task_level level, uint32_t entry, char *name)
 	return task_size - 1;
 }
 
-char table_header[10][10] = {"TID", "PID", "LEVEL", "STATUS", "NAME"}; 
+static char table_header[10][10] = {"TID", "PID", "LEVEL", "STATUS", "NAME"}; 
 
 void show_task_table()
 {

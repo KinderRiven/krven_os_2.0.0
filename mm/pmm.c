@@ -99,9 +99,19 @@ void init_pmm(){
 uint32_t alloc_pmm(int size)
 {
 	uint32_t addr = NULL;
+	uint32_t mark = pmm_stack_top;
+	uint32_t cnt = phy_page_count;
 
 	while(size > 0)
 	{
+		//如果内存不足
+		if(phy_page_count == 0)
+		{
+			pmm_stack_top = mark;
+			phy_page_count = cnt;
+			return 0;
+		}
+		
 		addr = pmm_stack[pmm_stack_top--];	
 		size -= PMM_PAGE_SIZE;
 		phy_page_count--;

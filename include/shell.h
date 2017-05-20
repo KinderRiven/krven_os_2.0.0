@@ -14,6 +14,14 @@ typedef void (*shell_handler_t)(void *args, tty_t *tty);
 
 //shell table
 
+//杀死进程
+void shell_kill_proc(void *args, tty_t *tty);
+
+//现实内存中的进程表
+void shell_show_proc(void *args, tty_t *tty);
+
+//fork测试程序
+void shell_fork(void *args, tty_t *tty);
 
 //分配一个内存
 void shell_pmm_alloc(void *args, tty_t *tty);

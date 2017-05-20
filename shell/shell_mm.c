@@ -27,3 +27,8 @@ void shell_pmm_alloc(void *args, tty_t *tty)
 	printf("Allocate %d B of Physical Memory at 0x%08X.\n", num, addr);
 	
 }
+
+void shell_fork(void *args, tty_t *tty)
+{
+	fork();
+}
