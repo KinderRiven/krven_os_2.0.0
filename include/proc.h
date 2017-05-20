@@ -8,6 +8,7 @@
 #define LDT_SIZE 2
 #define PROC_STACK_SIZE 8192
 #define PROC_MAX_NUM 11
+#define MAX_PROC_NAME 24
 
 #define ANY -1
 #define PROC_DEBUG 0
@@ -62,7 +63,7 @@ struct proc_t{
 	
 	pid_t pid;							//进程id号
 	tid_t tid;							//对应的任务号
-	char name[15];						//进程名称
+	char name[MAX_PROC_NAME];			//进程名称
 
 										//以下是进程的消息处理内容
 	msg_t *msg;							//消息结构体
@@ -76,6 +77,8 @@ struct proc_t{
 	int	msg_block;						//是否有消息阻塞	
 	struct proc_t *msg_head;			//消息接收
 	struct proc_t *msg_next;			//链表指针	
+
+	int take_up;						//进程表是否为空
 	
 }proc_t;
 
@@ -86,13 +89,22 @@ extern proc_t procs[PROC_MAX_NUM];
 extern char proc_stack[PROC_MAX_NUM][PROC_STACK_SIZE];
 
 //正在运行的进程数量
-extern int proc_num;
+extern int proc_count;
+
+//初始化进程表
+void init_proc_table();
 
 //新建一个权限级为1的进程
 pid_t new_task_proc(uint32_t fun);
 
-//新疆一个权限级为3的进程
+//新建一个权限级为3的进程
 pid_t new_user_proc(uint32_t fun);
+
+//新建一个初始化进程(权限级为3)
+pid_t new_init_proc(uint32_t fun);
+
+//DEBUG
+void proc_print_ldt(int num);
 
 //进程通信函数
 

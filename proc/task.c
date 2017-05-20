@@ -1,4 +1,6 @@
 #include "task.h"
+#include "hd.h"
+#include "fs.h"
 #include "string.h"
 #include "stdio.h"
 #include "ui.h"
@@ -12,7 +14,8 @@ void init_task_table()
 	task_size = 0;
 }
 
-tid_t add_new_task(task_level level, uint32_t entry)
+//添加一个新任务
+tid_t add_new_task(task_level level, uint32_t entry, char *name)
 {
 	
 	//运行等级
@@ -20,28 +23,32 @@ tid_t add_new_task(task_level level, uint32_t entry)
 	
 	//任务入口
 	task_table[task_size].entry = entry;
+
+	//任务名称
+	strcpy(task_table[task_size].name, name);
 	
 	//任务等待
 	task_table[task_size].status = TASK_WAITING;
 
+	//Task id
 	task_table[task_size].tid = task_size;
-	
+
 	task_size++;
 	
 	//返回任务的id
 	return task_size - 1;
 }
 
-char table_header[10][10] = {"Id", "Pid", "Level", "Status"}; 
+char table_header[10][10] = {"TID", "PID", "LEVEL", "STATUS", "NAME"}; 
 
 void show_task_table()
 {
 
 	int i, j, line_width = 10;
-	for(i = 0; i < 4; i++)
+	for(i = 0; i < 5; i++)
 	{
-		printf("%s", table_header[i]);
-		for(j = 0; j <= line_width - strlen(table_header[i]); j++)
+		printc(c_black, c_light_magenta, "%s", table_header[i]);
+		for(j = 0; j < line_width - strlen(table_header[i]); j++)
 			printf(" ");
 	}
 	printf("\n");
@@ -68,18 +75,19 @@ void show_task_table()
 		switch(task_table[i].status)
 		{	
 			case TASK_STOP : 
-				printc(c_black, c_red, "STOP");	
+				printc(c_black, c_red, "STOP      ");	
 				break;
 			case TASK_RUNNING:
-				printc(c_black, c_green, "RUNNING");
+				printc(c_black, c_green, "RUNNING   ");
 				break;
 			case TASK_WAITING:
-				printc(c_black, c_light_brown, "WAITING");
+				printc(c_black, c_light_brown, "WAITING   ");
 				break;
 			default:
-				printf("ERROR");
+				printf("ERROR     ");
 				break;	
 		}
+		printc(c_black, c_cyan, "%s", task_table[i].name);
 		printf("\n");
 	}	
 }

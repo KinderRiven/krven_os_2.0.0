@@ -86,7 +86,7 @@ irq%1:
 	;这里开始屏蔽同类中断
 	in		al,	INT_M_CTLMASK	; al = 0x21
 	or		al, (1 << %1)		; al | (1 << IRQ_ID)	
-	out	INT_M_CTLMASK, al		; outb(0x21, al)
+	out		INT_M_CTLMASK, al	; outb(0x21, al)
 	
 	;开中断，可重入		
 	sti
@@ -98,8 +98,8 @@ irq%1:
 	
 	;解除同类中断
 	in		al, INT_M_CTLMASK
-	and	al, ~(1 << %1)
-	out	INT_M_CTLMASK, al
+	and		al, ~(1 << %1)
+	out		INT_M_CTLMASK, al
 
 	;返回	
 	ret

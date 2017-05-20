@@ -51,6 +51,7 @@ void printk_color(c_color_t back, c_color_t fore, const char *format, ...)
 	va_end(args);
 
 	buff[i] = '\0';
+
 	console_write_color(buff, back, fore);
 }
 
@@ -67,8 +68,9 @@ void printc(c_color_t back, c_color_t fore, const char *format, ...){
 	va_end(args);
 
 	buff[i] = '\0';
-	//console_write_color(buff, back, fore);
+	
 	write_color(buff, back, fore);
+
 }
 #define is_digit(c)	((c) >= '0' && (c) <= '9')
 

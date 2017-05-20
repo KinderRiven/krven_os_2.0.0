@@ -24,6 +24,9 @@ extern uint32_t kern_stack_top;
 
 //内存对齐
 #define PMM_PAGE_MASK 0xFFFFF000
+
+int get_kernel_mm();
+
 void show_memory_map();
 
 void show_pmm_status();
@@ -34,5 +37,8 @@ uint32_t pmm_alloc_page();
 
 void pmm_free_page(uint32_t p);
 
+//分配内存
+//size的单位为B
+uint32_t alloc_pmm(int size);
 
 #endif

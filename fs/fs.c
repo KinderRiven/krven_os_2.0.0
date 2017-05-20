@@ -9,6 +9,9 @@
 
 pid_t fs_pid;
 
+char current_dir_name [] = ".";
+char parent_dir_name [] = "..";
+
 //是否进行文件系统的安装
 static uint8_t to_mkfs = 0;
 
@@ -38,6 +41,9 @@ static void fs_print_sector(int sector_no, int num);
 
 //打印dir目录
 static void fs_print_dir(int);
+
+//等待一个来自硬盘的消息
+static void wait_hd_ready();
 
 void fs_print_debug(void *ptr, int num)
 {
@@ -74,9 +80,6 @@ static void print_super_block(super_block_t *sp)
 //3. 获得超级块
 static void fs_init()
 {
-	
-	//获得文件系统的pid
-	get_proc_pid(&fs_pid);
 	
 	msg_t msg;
 	pid_t pid;
@@ -163,16 +166,42 @@ static void fs_print_dir(int inode_id)
 }
 
 
-void fs_task()
+static void wait_hd_ready()
 {
-
-	//等待以下
-	sleep(100);
 
 	msg_t msg;
 
+	//等待硬盘模块的初始化结束
+	while(1)
+	{	
+
+		//等待一个来自硬盘的消息
+		recv_message(hd_pid, fs_pid, &msg);	
+
+		//判断一下消息内容
+		switch(msg.type)
+		{
+			case MSG_HD_READY:
+				return;	
+			default:
+				break;
+		}
+	}
+
+}
+
+void fs_task()
+{
+
+	//等待一下硬盘准备
+	msg_t msg;
+
+	wait_hd_ready();
+	
+	//初始化，主要用于获得硬盘的超级块和分区信息
 	fs_init();
 
+	//如果设置安装fs标志，进行文件系统格式化
 	if(to_mkfs)
 		mkfs();
 	
@@ -210,9 +239,16 @@ void fs_task()
 	
 		switch(msg.type)
 		{
+			//获得目录信息
 			case MSG_FS_DIR:
 				get_dir_entries(&msg);
 				break;		
+			case MSG_FS_MKDIR:
+				opt_mk_dir(&msg);
+				break;
+			case MSG_FS_MKFILE:
+				opt_mk_file(&msg);
+				break;
 			default:
 				printf("File System code error!");
 				break;
@@ -225,6 +261,7 @@ static void mkfs()
 {
 
 	sleep(50);
+	printf("\n");
 	int i, j;
 
 	//printf("LBA : %d %d\n", hd_part.start_lba, hd_part.sector_num);
@@ -375,10 +412,11 @@ static void mkfs()
 		printf("Root dir id is : %d\n", root_dir_inode_id);
 		
 		dir_entry_t root_entry;
-		
-		char name[] = ".";
+	
+		//当前目录	
 		root_entry.inode_id = root_dir_inode_id;	
-		memcpy((uint8_t *) root_entry.name, (uint8_t *) name, sizeof(name));	
+		memcpy((uint8_t *) root_entry.name, (uint8_t *) current_dir_name, strlen(current_dir_name) + 1);	
+		root_entry.type = FS_TYPE_FOLDER;
 	
 		//添加目录项	
 		add_dir_entry(root_dir_inode_id, &root_entry);	

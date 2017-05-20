@@ -15,7 +15,7 @@ void ui_welcome()
 	printf("\n");
 	ui_blank(blank);
 
-	printf("%s", welcome_str);
+	printc(c_black, c_light_red, "%s", welcome_str);
 	
 	printf("\n");
 	ui_line(79);

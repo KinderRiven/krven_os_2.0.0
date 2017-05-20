@@ -13,6 +13,9 @@
 #define SYS_PROC_NUM 1
 #define SYS_WRITE_CLEAR 2
 
+//物理内存占用情况
+#define SYS_PMM_USED 3
+
 //单参调用
 //write
 #define SYS_WRITE 51

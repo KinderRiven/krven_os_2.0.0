@@ -9,6 +9,7 @@
 #define MAX_FILENAME 24
 
 #define KOS_FS_LV1 0x6666
+#define DEF_ROOT_INODE 0x01
 
 #define FOLDER_SIZE		1024
 #define INODE_MAX_NUM 	4096
@@ -68,6 +69,8 @@ struct dir_entry_t
 #define MAX_DIR_ENTRIES_NUM (FOLDER_SIZE / sizeof(dir_entry_t))
 
 //fs.c
+extern char current_dir_name[];
+extern char parent_dir_name[];
 extern pid_t fs_pid;
 extern uint32_t fs_root;
 extern super_block_t super_block;
@@ -99,6 +102,8 @@ void add_dir_entry(int, dir_entry_t *);
 
 //opt.c
 void get_dir_entries(msg_t *msg);
+void opt_mk_dir(msg_t *msg);
+void opt_mk_file(msg_t *msg);
 
 #endif
 

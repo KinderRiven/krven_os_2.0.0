@@ -3,6 +3,7 @@
 #include "types.h"
 
 #define MAX_TASK_SIZE 1024
+#define MAX_TASK_NAME 24
 
 typedef 
 enum task_status
@@ -26,11 +27,14 @@ typedef
 struct task_t
 {
 
-	pid_t pid;				//进程号
-	tid_t tid;				//任务号
-	task_status status;		//运行权限
-	task_level level;		//任务等级
-	uint32_t entry;			//进程入口指针	
+	pid_t pid;					//进程号
+	tid_t tid;					//任务号
+	
+	task_status status;			//运行权限
+	task_level level;			//任务等级
+	
+	uint32_t entry;				//进程入口指针	
+	char name[MAX_TASK_NAME];	//任务名称
 
 } task_t;
 
@@ -44,7 +48,7 @@ extern uint32_t task_size;
 void init_task_table();
 
 //添加一个新的任务,返回任务的tid号
-tid_t add_new_task(task_level level, uint32_t entry);
+tid_t add_new_task(task_level level, uint32_t entry, char *name);
 
 void show_task_table();
 #endif

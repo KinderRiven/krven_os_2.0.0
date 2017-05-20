@@ -20,6 +20,9 @@ struct console_buffer_t{
 typedef
 struct fs_buffer_t
 {
+	//是否需要刷新
+	int update_flag;
+
 	//当前的文件夹inode_id
 	int current_dir_inode_id;
 
@@ -37,8 +40,9 @@ struct tty_t{
 	uint8_t buf_size;
 	uint8_t buf[TTY_BUFFER_SIZE];		//缓冲区大小
 	uint8_t point;						//打印指针
-	uint8_t len;						//长度(用于退格计数)
-	
+
+	uint8_t pos;						//命令行buffer长度
+	uint8_t cmd_buf[TTY_BUFFER_SIZE];	//命令行buffer	
 	console_buffer_t console_buffer;	//保存屏幕内存
 	fs_buffer_t fs_buffer;
 

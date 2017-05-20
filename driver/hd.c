@@ -1,4 +1,5 @@
 #include "hd.h"
+#include "fs.h"
 #include "const.h"
 #include "string.h"
 #include "proc.h"
@@ -16,6 +17,9 @@ pid_t hd_pid;
 hd_part_t hd_part_table[MAX_HD_PART];
 int hd_part_num = 0;
 
+//准备好了之后发送一个消息
+static void send_fs_ready();
+	
 //打印磁盘信息
 static void hd_print_info(uint16_t *hdinfo);
 
@@ -87,6 +91,15 @@ static void init_hd()
 	register_interrupt_handler(IRQ14, hd_handler);	
 }
 
+static void send_fs_ready()
+{
+	msg_t msg;
+
+	//向虚拟文件系统发送一个准备就绪的消息
+	msg.type = MSG_HD_READY;
+	send_message(hd_pid, fs_pid, &msg);
+}
+
 void hd_task()
 {
 
@@ -95,9 +108,9 @@ void hd_task()
 	//初始化硬盘驱动程序
 	init_hd();
 
-	//获得硬盘驱动程序pid
-	get_proc_pid(&hd_pid);	
-
+	//想虚拟文件系统发送一个准备就绪的消息
+	send_fs_ready();
+	
 	while(1)
 	{
 		//开始接收硬盘请求

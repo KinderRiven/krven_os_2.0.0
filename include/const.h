@@ -33,18 +33,22 @@
 
 
 //段的DPL权限
-#define DPL_0	0x00			//DPL
-#define DPL_1	0x20
-#define DPL_2	0x40
-#define DPL_3	0x60
+#define DPL_0		0x00			//DPL
+#define DPL_1		0x20
+#define DPL_2		0x40
+#define DPL_3		0x60
+#define DPL_MASK	0x60
 
 //偏移量(一般为1)
 #define DB_16	0x00
 #define DB_32	0x40
+#define DB_MASK 0x40
 
 //G颗粒读
 #define G_1		0x00
 #define G_4096	0x80 
+#define G_MASK	0x80
+
 
 /*********************************
  *                               *

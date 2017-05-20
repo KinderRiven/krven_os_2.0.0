@@ -35,6 +35,7 @@ void *kmalloc(uint32_t len)
 	header_t *prev_header = 0;
 
 	while (cur_header) {
+		
 		// 如果当前内存块没有被申请过而且长度大于待申请的块
 		if (cur_header->allocated == 0 && cur_header->length >= len) {
 			// 按照当前长度切割内存
@@ -43,6 +44,7 @@ void *kmalloc(uint32_t len)
 			// 返回的时候必须将指针挪到管理结构之后
 			return (void *)((uint32_t)cur_header + sizeof(header_t));
 		}
+		
 		// 逐次推移指针
 		prev_header = cur_header;
 		cur_header = cur_header->next;
@@ -157,24 +159,24 @@ void glue_chunk(header_t *chunk)
 
 void test_heap()
 {
-	printc(c_black, c_magenta, "Test kmalloc() && kfree() now ...\n\n");
+	printk("Test kmalloc() && kfree() now ...\n\n");
 
 	void *addr1 = kmalloc(50);
-	printf("kmalloc    50 byte in 0x%X\n", addr1);
+	printk("kmalloc    50 byte in 0x%X\n", addr1);
 	void *addr2 = kmalloc(500);
-	printf("kmalloc   500 byte in 0x%X\n", addr2);
+	printk("kmalloc   500 byte in 0x%X\n", addr2);
 	void *addr3 = kmalloc(5000);
-	printf("kmalloc  5000 byte in 0x%X\n", addr3);
+	printk("kmalloc  5000 byte in 0x%X\n", addr3);
 	void *addr4 = kmalloc(50000);
-	printf("kmalloc 50000 byte in 0x%X\n\n", addr4);
+	printk("kmalloc 50000 byte in 0x%X\n\n", addr4);
 
-	printf("free mem in 0x%X\n", addr1);
+	printk("free mem in 0x%X\n", addr1);
 	kfree(addr1);
-	printf("free mem in 0x%X\n", addr2);
+	printk("free mem in 0x%X\n", addr2);
 	kfree(addr2);
-	printf("free mem in 0x%X\n", addr3);
+	printk("free mem in 0x%X\n", addr3);
 	kfree(addr3);
-	printf("free mem in 0x%X\n\n", addr4);
+	printk("free mem in 0x%X\n\n", addr4);
 	kfree(addr4);
 }
 

@@ -32,3 +32,41 @@ void get_dir_entries(msg_t *msg)
 	send_message(fs_pid, msg -> pid, &msg_finish);
 
 }
+
+//建立文件夹
+void opt_mk_dir(msg_t *msg)
+{
+	char name[MAX_FILENAME];
+	int dir;
+	int mode;
+
+	memcpy((uint8_t *)name,	(uint8_t *) msg -> buf, MAX_FILENAME);
+	dir = msg -> inode;
+	mode = msg -> mode;
+
+	mk_dir(name, mode, dir);
+	
+	msg_t msg_finish;
+	send_message(fs_pid, msg -> pid, &msg_finish);
+}
+
+//建立文件
+void opt_mk_file(msg_t *msg)
+{
+	char name[MAX_FILENAME];
+	int dir;
+	int size;
+	int mode;
+
+	memcpy((uint8_t *)name,	(uint8_t *) msg -> buf, MAX_FILENAME);
+	dir = msg -> inode;
+	mode = msg -> mode;
+	size = msg -> cnt;
+
+	mk_file(name, size, mode, dir);
+	
+	msg_t msg_finish;
+	send_message(fs_pid, msg -> pid, &msg_finish);
+}
+
+

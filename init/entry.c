@@ -1,3 +1,5 @@
+#include "mm.h"
+#include "init.h"
 #include "types.h"
 #include "gdt.h"
 #include "heap.h"
@@ -12,6 +14,7 @@
 #include "tty.h"
 #include "sys.h"
 #include "proc.h"
+#include "shell.h"
 #include "tss.h"
 #include "fs.h"
 #include "kernel.h"
@@ -60,9 +63,9 @@ void kern_entry(){
 					"xor %%ebp, %%ebp" : : "r"(kernel_stack_top));
 	
 	glb_mboot_ptr = mboot_ptr_tmp + PAGE_OFFSET;
+	
 	kern_init();
 }
-
 
 
 void kern_init()
@@ -106,12 +109,16 @@ void kern_init()
 
 	//初始化TSS进程表
 	init_tss();
+	init_shell();
 
 	//初始化系统调用
 	init_sys_call();	
 
 	//清屏
 	console_clear();
+
+	//初始化进程表
+	init_proc_table();
 	
 	//初始化任务列表
 	init_task_table();
@@ -123,35 +130,41 @@ void kern_init()
 	//new_task_proc((uint32_t) keyboard_buffer_start);	
 	
 	//新建任务
-	//#0 tty进程
-	add_new_task(SYS_TASK,  (uint32_t) tty_start);
+	//tty进程
+	add_new_task(SYS_TASK,  (uint32_t) tty_start, "TTY");
 	
-	//#1 键盘读取任务
-	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start);	
+	//键盘读取任务
+	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start, "KEYBOARD");	
+
+	//init进程
+	add_new_task(USER_TASK, (uint32_t ) init_task, "INIT");
 	
-	//#2 用户进程A
+	//用户进程A
 	//add_new_task(USER_TASK, (uint32_t) debug_sys_task);
 	
-	//#3 用户进程B
+	//用户进程B
 	//add_new_task(USER_TASK, (uint32_t) debug_user_task);	
 	
-	//#4 系统进程send1
+	//系统进程send1
 	//add_new_task(SYS_TASK, (uint32_t) debug_send_task);	
 	
-	//#5 系统进程send2
+	//系统进程send2
 	//add_new_task(SYS_TASK, (uint32_t) debug_send_task2);
 	
-	//#6 系统进程Reveice
+	//系统进程Reveice
 	//add_new_task(SYS_TASK, (uint32_t) debug_recv_task);
 
-	//#7 系统调用
+	//系统调用
 	//add_new_task(SYS_TASK, (uint32_t) debug_sys_call);	
 
-	//#8 系统硬盘驱动进程
-	add_new_task(SYS_TASK, (uint32_t) hd_task);
+	//系统硬盘驱动进程
+	add_new_task(SYS_TASK, (uint32_t) hd_task, "HD");
 	
-	//#9 硬盘驱动测试进程
-	add_new_task(SYS_TASK, (uint32_t) fs_task);
+	//虚拟文件系统进程
+	add_new_task(SYS_TASK, (uint32_t) fs_task, "FS");
+
+	//内存管系统进程
+	add_new_task(SYS_TASK, (uint32_t) mm_task, "MM");
 		
 	//初始化进程
 	task_schedule();

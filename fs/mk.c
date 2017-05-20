@@ -358,7 +358,7 @@ int mk_file(char name[], int size, int mode, int dir)
 	dir_entry_t dir_entry;
 
 	//添加目录项
-	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, strlen(name));
+	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, strlen(name) + 1);
 	dir_entry.inode_id = inode_id;
 	dir_entry.type = FS_TYPE_FILE;	
 
@@ -374,21 +374,24 @@ int mk_dir(char name[], int mode, int dir)
 {
 	int inode_id = mk_inode(FOLDER_SIZE, mode);
 	dir_entry_t dir_entry;
-	char up[] = ".";
 
-	//添加上级目录项
-	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, strlen(name));
+	//添加目录项
+	memcpy((uint8_t *) dir_entry.name, (uint8_t *) name, strlen(name) + 1);
 	dir_entry.inode_id = inode_id;	
 	dir_entry.type = FS_TYPE_FOLDER;
 
 	add_dir_entry(dir, &dir_entry);
 
-	//添加目录项	
-	memcpy((uint8_t *) dir_entry.name, (uint8_t *) up, strlen(up));
-	dir_entry.inode_id = dir;
+	//添加当前目录项	
+	memcpy((uint8_t *) dir_entry.name, (uint8_t *) current_dir_name, strlen(current_dir_name) + 1);
+	dir_entry.inode_id = inode_id;
 	dir_entry.type = FS_TYPE_FOLDER;	
-	
 	add_dir_entry(inode_id, &dir_entry);
 
+	//添加上级目录项
+	memcpy((uint8_t *) dir_entry.name, (uint8_t *) parent_dir_name, strlen(parent_dir_name) + 1);
+	dir_entry.inode_id = dir;
+	add_dir_entry(inode_id, &dir_entry);
+	
 	return 1;
 }

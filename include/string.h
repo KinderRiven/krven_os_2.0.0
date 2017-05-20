@@ -13,4 +13,8 @@ int strcmp(const char *str1, const char *str2);
 
 int strlen(const char *str);
 
+void strcpy(char *str1, const char *str2);
+
+void strcat(char *str1, const char *str2);
+
 #endif
