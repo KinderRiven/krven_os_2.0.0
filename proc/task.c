@@ -30,13 +30,13 @@ tid_t add_new_task(task_level level, uint32_t entry, char *name)
 	//任务等待
 	task_table[task_size].status = TASK_WAITING;
 
-	//Task id
+	task_table[task_size].pid = -1;
 	task_table[task_size].tid = task_size;
 
 	task_size++;
 	
 	//返回任务的id
-	return task_size - 1;
+	return task_size-1;
 }
 
 static char table_header[10][10] = {"TID", "PID", "LEVEL", "STATUS", "NAME"}; 

@@ -23,7 +23,7 @@ void init_schedule()
 }
 
 //进行调度主体
-void proc_schedule()
+void proc_line_schedule()
 {
 	while(1){
 		
@@ -39,14 +39,48 @@ void proc_schedule()
 			current_proc -> status = PROC_RUNNING;
 			break;
 		}
+		
+		//如果被阻塞了
 		else if(current_proc -> msg_block == 1){
 			current_proc -> status = PROC_BLOCK;
 		}
 	}
 }
 
+void proc_priority_schedule()
+{
+	int i;
+	int mark;
+	double max_level = 0;
+
+	//线性检测
+	for(i = 0; i < PROC_MAX_NUM; i++)
+	{
+		//可调度非空进程块
+		if(procs[i].msg_block != 1 && procs[i].take_up != 0)
+		{
+			procs[i].status = PROC_RUNNING;
+			procs[i].waiting++;
+			double tmp = 1.0 * procs[i].waiting / procs[i].priority; 
+			if(tmp > max_level)
+			{
+				max_level = tmp;
+				mark = i;
+			}
+		}
+		else
+		{
+			procs[i].status = PROC_BLOCK;
+		}
+	}
+
+	//选择最终的调度任务
+	current_proc = &procs[mark];
+	procs[mark].waiting = 0;
+}
+
 //任务唤醒
-void task_schedule()
+void task_line_schedule()
 {
 
 	int i = 0;
@@ -83,7 +117,7 @@ void task_schedule()
 					{
 						tty_pid = task_table[i].pid;	
 					}
-					else if(strcmp(task_table[i].name, "") == 0)
+					else if(strcmp(task_table[i].name, "MM") == 0)
 					{
 						mm_pid = task_table[i].pid;
 					}
@@ -94,12 +128,13 @@ void task_schedule()
 					task_table[i].pid = new_user_proc((uint32_t) task_table[i].entry);
 				}
 			}
-		
+
 			if(task_table[i].pid != -1)
 			{	
 				//转入调度
 				task_table[i].status = TASK_RUNNING;
-				
+				task_table[i].tid = i;			
+	
 				//复制一些内容，名称、优先级等信息
 				strcpy(procs[task_table[i].pid].name, task_table[i].name);	
 				procs[task_table[i].pid].tid = task_table[i].tid;	

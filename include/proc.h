@@ -73,12 +73,18 @@ enum proc_status
 
 } proc_status;
 
+
+//调度算法
 typedef
 struct proc_t{
 	
+	///////////////////////////////////////////////////////////////////////////
+
 	proc_regs_t regs;					//寄存器保存的值 (18 * 4 = 72字节)
 	uint16_t ldtr;						//ldtr寄存器的值 (2字节)
 	ldt_descriptor_t ldts[LDT_SIZE];	//2个
+
+	//////////////////////////////////////////////////////////////////////////	
 	
 	pid_t pid;							//进程id号
 	tid_t tid;							//对应的任务号
@@ -100,6 +106,9 @@ struct proc_t{
 	int take_up;						//进程表是否为空
 	proc_level level;					//进程等级
 	proc_status status;					//进程状态
+
+	uint32_t priority;					//进程优先级
+	uint32_t waiting;					//等待的时间 单位（调度循环次数）
 	
 }proc_t;
 

@@ -1,3 +1,4 @@
+#include "sched.h"
 #include "idt.h"
 #include "string.h"
 #include "stdio.h"
@@ -19,6 +20,7 @@ void isr_handler(proc_regs_t *regs){
 	console_error();
 
 	printk_color(c_blue, c_light_brown, "We are sorry to tell you that there was a mistake. ^_^\n");	
+	printk_color(c_blue, c_light_brown, "[PROC]     : %d\n", current_proc -> pid);	
 	printk_color(c_blue, c_light_brown, "[SEG_GS]   : 0x%X\n", regs -> gs);	
 	printk_color(c_blue, c_light_brown, "[SEG_FS]   : 0x%X\n", regs -> fs);
 	printk_color(c_blue, c_light_brown, "[SEG_ES]   : 0x%X\n", regs -> es);
@@ -27,7 +29,7 @@ void isr_handler(proc_regs_t *regs){
 	printk_color(c_blue, c_light_brown, "[SEG_SS]   : 0x%X, [ESP] : 0x%X\n", regs -> ss, regs -> esp);
 	printk_color(c_blue, c_light_brown, "[INT_NO]   : %d\n", regs -> int_no);
 	printk_color(c_blue, c_light_brown, "[ERR_CODE] : %d\n", regs -> err_code);
-	printk_color(c_blue, c_light_brown, "[EFLAGS]   : %d\n", regs -> eflags);
+	printk_color(c_blue, c_light_brown, "[EFLAGS]   : 0x%08X\n", regs -> eflags);
 	printk_color(c_blue, c_light_brown, "[RETADDR]  : 0x%08X\n", regs -> retaddr);
 	
 	while(1);

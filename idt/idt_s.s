@@ -98,8 +98,8 @@ irq%1:
 	
 	;解除同类中断
 	in		al, INT_M_CTLMASK
-	and		al, ~(1 << %1)
-	out		INT_M_CTLMASK, al
+	and	al, ~(1 << %1)
+	out	INT_M_CTLMASK, al
 
 	;返回	
 	ret
@@ -230,9 +230,11 @@ save:
 ;---------------------------------------------------------;
 
 .save_reenter:
+	
 	;mov		bh, 0Fh
 	;mov		bl, '?'
 	;mov		[gs : (80 * 0 + 0) * 2], bx
+	
 	push	restart_reenter	
 	jmp		[eax + RET_ADDR]
 
@@ -351,7 +353,6 @@ sys_call:
 	sti
 	call	[sys_call_table + eax * 4]
 	cli
-
 	ret
 
 .end:

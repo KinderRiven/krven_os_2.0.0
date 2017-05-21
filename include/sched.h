@@ -5,11 +5,14 @@
 
 extern proc_t* current_proc;
 
-//任务调度
-void task_schedule();
+//线性任务调度
+void task_line_schedule();
 
-//进程调度
-void proc_schedule();
+//基于优先级的等待比优先级调度算法
+void task_priority_schedule();
+
+//线性进程调度
+void proc_line_schedule();
 
 //初始化
 void init_schedule();

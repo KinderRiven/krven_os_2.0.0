@@ -134,16 +134,25 @@ void kern_init()
 	add_new_task(SYS_TASK,  (uint32_t) tty_start, "TTY");
 	
 	//键盘读取任务
-	add_new_task(USER_TASK, (uint32_t) keyboard_buffer_start, "KEYBOARD");	
+	add_new_task(SYS_TASK, (uint32_t) keyboard_buffer_start, "KEYBOARD");	
 
 	//init进程
 	add_new_task(USER_TASK, (uint32_t ) init_task, "INIT");
 	
-	//用户进程A
-	//add_new_task(USER_TASK, (uint32_t) debug_sys_task);
+	//系统硬盘驱动进程
+	add_new_task(SYS_TASK, (uint32_t) hd_task, "HD");
 	
-	//用户进程B
-	//add_new_task(USER_TASK, (uint32_t) debug_user_task);	
+	//虚拟文件系统进程
+	add_new_task(SYS_TASK, (uint32_t) fs_task, "FS");
+
+	//内存管系统进程
+	add_new_task(SYS_TASK, (uint32_t) mm_task, "MM");
+	
+	//用户进程A
+	add_new_task(SYS_TASK, (uint32_t) debug_sys_task, "SYS");
+	
+	//系统进程B
+	add_new_task(USER_TASK, (uint32_t) debug_user_task, "USER");	
 	
 	//系统进程send1
 	//add_new_task(SYS_TASK, (uint32_t) debug_send_task);	
@@ -156,18 +165,9 @@ void kern_init()
 
 	//系统调用
 	//add_new_task(SYS_TASK, (uint32_t) debug_sys_call);	
-
-	//系统硬盘驱动进程
-	add_new_task(SYS_TASK, (uint32_t) hd_task, "HD");
 	
-	//虚拟文件系统进程
-	add_new_task(SYS_TASK, (uint32_t) fs_task, "FS");
-
-	//内存管系统进程
-	add_new_task(SYS_TASK, (uint32_t) mm_task, "MM");
-		
 	//初始化进程
-	task_schedule();
+	task_line_schedule();
 	init_schedule();
 	
 	while(1){

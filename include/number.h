@@ -6,4 +6,6 @@
 //char to uint32_t 
 uint32_t cstr_to_uint32(char *); 
 
+int32_t cstr_to_int32(char *);
+
 #endif

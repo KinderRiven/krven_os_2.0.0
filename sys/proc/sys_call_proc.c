@@ -1,3 +1,4 @@
+#include "proc.h"
 #include "sys_proc.h"
 #include "sched.h"
 #include "stdio.h"
@@ -14,6 +15,9 @@ void sys_kill(pid_t pid)
 	procs[pid].take_up = 0;
 
 	//挂起task进程
+	printk("PID : %d TID : %d\n", pid, procs[pid].tid);
+
+	//while(1);
 	task_table[procs[pid].tid].status = TASK_STOP;	
 }
 
@@ -50,7 +54,7 @@ void sys_send_message(pid_t recv_from, pid_t send_to, msg_t *msg)
 	
 	//重新进行调度
 	if(proc_from -> msg_block == 1){
-		proc_schedule();	
+		proc_line_schedule();	
 	}
 }
 
@@ -68,7 +72,7 @@ void sys_recv_message(pid_t recv_from, pid_t send_to, msg_t *msg)
 
 	//重新进行调度
 	if(proc_to -> msg_block == 1){
-		proc_schedule();
+		proc_line_schedule();
 	}
 }
 
@@ -82,7 +86,7 @@ void sys_send_interrupt(pid_t pid, int interrupt_id)
 	msg_send_interrupt(pid, interrupt_id);
 	
 	if(proc -> msg_block == 1){
-		proc_schedule();
+		proc_line_schedule();
 	}
 }
 
@@ -96,6 +100,6 @@ void sys_recv_interrupt(pid_t pid, int interrupt_id)
 	msg_recv_interrupt(pid, interrupt_id);
 
 	if(proc -> msg_block == 1){
-		proc_schedule();
+		proc_line_schedule();
 	}
 }

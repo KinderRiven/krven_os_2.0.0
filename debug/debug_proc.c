@@ -20,9 +20,9 @@ void sleep(uint32_t time)
 void debug_user_task()
 {
 	uint8_t byte = 'A';
+	
 	while(1){
 		debug_print_right(byte);	
-		printf("Hello World!\n");
 		sleep(100);
 	}
 }
@@ -32,7 +32,8 @@ void debug_sys_task()
 {
 
 	uint16_t byte = 'B';
-	while(1){
+	while(1)
+	{
 		debug_print_right(byte);
 		sleep(100);
 	}

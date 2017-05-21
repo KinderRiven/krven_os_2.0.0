@@ -31,7 +31,7 @@ void shell_show_proc(void *args, tty_t *tty)
 void shell_kill_proc(void *args, tty_t *tty)
 {
 	char (*name)[SHELL_PARAM_SIZE] = args;
-	uint32_t num = cstr_to_uint32(name[1]);
+	pid_t num = (int32_t) cstr_to_int32(name[1]);
 
-	kill((pid_t) num);	
+	kill(num);	
 }

@@ -88,7 +88,6 @@ int get_empty_proc_block()
 		//分配一个进程块
 		if(procs[i].take_up == 0)
 		{
-			procs[i].take_up = 1;
 			return i;
 		}
 	}
@@ -109,6 +108,11 @@ pid_t new_init_proc(uint32_t fun)
 	if(idx == PROC_TABLE_FULL)
 		return -1;
 
+	//初始化进程控制块
+	memset(&procs[idx], 0, sizeof(proc_t));
+	
+	procs[idx].take_up = 1;
+			
 	//代码段CS
 	ldt_set_descriptor(&procs[idx].ldts[0], 0, 0xFFFFFFFF, //limit, 
 				TYPE_RC | DPL_3, DB_32 | G_4096); 
@@ -149,9 +153,12 @@ pid_t new_init_proc(uint32_t fun)
 	//用户进程关闭IO权限
 	procs[idx].regs.eflags = 0x202;
 	procs[idx].pid = idx;
+
+	//优先级
+	procs[idx].priority = 1;
+	procs[idx].waiting = 0;	
 	
 	return idx;
-
 }
 
 //新建一个进程
@@ -164,7 +171,10 @@ pid_t new_task_proc(uint32_t fun)
 	//进程表已经满了
 	if(idx == PROC_TABLE_FULL)
 		return -1;
-
+	
+	memset(&procs[idx], 0, sizeof(proc_t));
+	procs[idx].take_up = 1;
+	
 	//建立进程的LDT (修改DPL在低权限下运行)
 	//代码段CS
 	//0 ~ 4G
@@ -205,8 +215,10 @@ pid_t new_task_proc(uint32_t fun)
 	//系统进程拥有IO权限
 	procs[idx].regs.eflags = 0x1202;
 
-	//debug_proc(&procs[proc_num]);
 	procs[idx].pid = idx;
+	
+	procs[idx].priority = 1;
+	procs[idx].waiting = 0;	
 	
 	return idx;
 }
@@ -220,7 +232,10 @@ pid_t new_user_proc(uint32_t fun)
 
 	if(idx == PROC_TABLE_FULL)
 		return -1;
-
+	
+	memset(&procs[idx], 0, sizeof(proc_t));
+	procs[idx].take_up = 1;
+	
 	//建立进程的LDT (修改DPL在低权限下运行)
 	
 	//代码段CS
@@ -260,6 +275,10 @@ pid_t new_user_proc(uint32_t fun)
 	//用户进程关闭IO权限
 	procs[idx].regs.eflags = 0x202;
 	procs[idx].pid = idx;
+	
+	//调度算法
+	procs[idx].priority = 1;
+	procs[idx].waiting = 0;	
 	
 	return idx;
 }
@@ -310,7 +329,7 @@ void show_proc_table()
 					printc(c_black, c_green, "RUNNING   ");
 					break;
 				case PROC_BLOCK:
-					printc(c_black, c_light_brown, "WAITING   ");
+					printc(c_black, c_light_brown, "BLOCK     ");
 					break;
 				default:
 					printf("ERROR     ");

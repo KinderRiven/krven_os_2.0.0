@@ -7,11 +7,13 @@
 void clock_handler(){
 
 	//任务调度	
-	task_schedule();
+	task_line_schedule();
 	
-	//进程调度 
-	proc_schedule();
-
+	//线性进程调度 
+	proc_line_schedule();
+	
+	//基于优先级的
+	//proc_priority_schedule();
 }
 
 // 第一位 0 计数器使用二进制 1使用BCD码
